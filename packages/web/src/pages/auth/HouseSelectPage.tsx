@@ -46,9 +46,9 @@ export function HouseSelectPage() {
   });
 
   return (
-    <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/10">
-      <h2 className="text-xl font-bold text-white mb-1">Selecciona tu Casa</h2>
-      <p className="text-slate-400 text-sm mb-6">
+    <div className="bg-white/10 backdrop-blur-lg rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-white/10">
+      <h2 className="text-lg sm:text-xl font-bold text-white mb-1">Selecciona tu Casa</h2>
+      <p className="text-slate-400 text-xs sm:text-sm mb-4 sm:mb-6">
         Elige una casa e ingresa el PIN compartido
       </p>
 

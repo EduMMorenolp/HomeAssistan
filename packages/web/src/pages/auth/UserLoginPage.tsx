@@ -53,9 +53,9 @@ export function UserLoginPage() {
   });
 
   return (
-    <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/10">
+    <div className="bg-white/10 backdrop-blur-lg rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-white/10">
       {/* Header */}
-      <div className="flex items-center gap-3 mb-6">
+      <div className="flex items-center gap-3 mb-4 sm:mb-6">
         <button
           onClick={() => navigate("/auth/house")}
           className="p-2 rounded-lg hover:bg-white/10 transition-colors"
@@ -69,7 +69,7 @@ export function UserLoginPage() {
       </div>
 
       {/* Lista de miembros */}
-      <div className="grid grid-cols-2 gap-3 mb-6">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3 mb-4 sm:mb-6">
         {members.map((member) => (
           <button
             key={member.id}
@@ -78,7 +78,7 @@ export function UserLoginPage() {
               setPin("");
             }}
             className={cn(
-              "flex flex-col items-center gap-2 p-4 rounded-xl border transition-all",
+              "flex flex-col items-center gap-1.5 sm:gap-2 p-3 sm:p-4 rounded-xl border transition-all",
               selectedUserId === member.id
                 ? "border-blue-500 bg-blue-500/10"
                 : "border-white/10 hover:border-white/20 bg-white/5"
@@ -86,7 +86,7 @@ export function UserLoginPage() {
           >
             <div
               className={cn(
-                "w-14 h-14 rounded-full flex items-center justify-center text-lg font-bold",
+                "w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center text-base sm:text-lg font-bold",
                 selectedUserId === member.id
                   ? "bg-blue-500 text-white"
                   : "bg-white/10 text-slate-400"

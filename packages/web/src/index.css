@@ -14,8 +14,52 @@
   --color-info: #06b6d4;
 }
 
+/* ── Responsive base ───────────────────────── */
+html {
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Safe area para notch/gestos en móviles */
+body {
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+  overscroll-behavior: none;
+}
+
+/* Scroll suave en iOS */
+.scroll-touch {
+  -webkit-overflow-scrolling: touch;
+}
+
 /* Focus mode: botones grandes */
 .focus-mode {
   --btn-min-height: 4rem;
   --font-size-base: 1.25rem;
+}
+
+/* Overlay para sidebar mobile */
+.sidebar-overlay {
+  animation: fadeIn 200ms ease-out;
+}
+
+.sidebar-slide {
+  animation: slideIn 250ms ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideIn {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+
+/* Prevenir scroll del body cuando sidebar mobile está abierto */
+body.sidebar-open {
+  overflow: hidden;
 }

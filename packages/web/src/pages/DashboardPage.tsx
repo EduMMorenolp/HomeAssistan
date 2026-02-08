@@ -72,19 +72,19 @@ export function DashboardPage() {
   const navigate = useNavigate();
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Welcome */}
       <div>
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+        <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">
           Hola, {user?.name} 👋
         </h1>
-        <p className="text-slate-500 dark:text-slate-400">
+        <p className="text-sm sm:text-base text-slate-500 dark:text-slate-400">
           Bienvenido a {house?.name}
         </p>
       </div>
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
         <div className="bg-white dark:bg-slate-800 rounded-xl p-4 border border-slate-200 dark:border-slate-700">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center">
@@ -128,25 +128,25 @@ export function DashboardPage() {
 
       {/* Module Cards */}
       <div>
-        <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
+        <h2 className="text-base sm:text-lg font-semibold text-slate-900 dark:text-white mb-3 sm:mb-4">
           Módulos
         </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
           {moduleCards.map((card) => (
             <button
               key={card.to}
               onClick={() => navigate(card.to)}
               className={cn(
-                "flex items-center gap-4 p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:shadow-md transition-all text-left group"
+                "flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:shadow-md transition-all text-left group"
               )}
             >
               <div
                 className={cn(
-                  "w-12 h-12 rounded-xl flex items-center justify-center text-white",
+                  "w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl flex items-center justify-center text-white shrink-0",
                   card.color
                 )}
               >
-                <card.icon className="w-6 h-6" />
+                <card.icon className="w-5 h-5 sm:w-6 sm:h-6" />
               </div>
               <div>
                 <p className="font-semibold text-slate-900 dark:text-white group-hover:text-blue-500 transition-colors">
