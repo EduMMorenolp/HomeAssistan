@@ -10,6 +10,8 @@ import { errorHandler } from "./middleware/error-handler";
 import { authRouter } from "./routes/auth.routes";
 import { housesRouter } from "./routes/houses.routes";
 import { usersRouter } from "./routes/users.routes";
+import { tasksRouter } from "./routes/tasks.routes";
+import { financeRouter } from "./routes/finance.routes";
 
 export const app: Express = express();
 
@@ -34,6 +36,8 @@ app.get("/api/health", (_req, res) => {
 app.use("/api/auth", authRouter);
 app.use("/api/houses", housesRouter);
 app.use("/api/users", usersRouter);
+app.use("/api/tasks", tasksRouter);
+app.use("/api/finance", financeRouter);
 
 // ── Error Handler (must be last) ─────────────
 app.use(errorHandler);

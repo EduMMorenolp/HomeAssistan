@@ -11,6 +11,8 @@ import { UserLoginPage } from "@/pages/auth/UserLoginPage";
 
 // Pages - App
 import { DashboardPage } from "@/pages/DashboardPage";
+import { TasksPage } from "@/pages/TasksPage";
+import { FinancePage } from "@/pages/FinancePage";
 
 export function App() {
   return (
@@ -25,6 +27,8 @@ export function App() {
       <Route element={<ProtectedRoute />}>
         <Route element={<AppLayout />}>
           <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/tareas" element={<TasksPage />} />
+          <Route path="/finanzas" element={<FinancePage />} />
         </Route>
       </Route>
 
