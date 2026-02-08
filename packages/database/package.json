@@ -23,13 +23,12 @@
   },
   "dependencies": {
     "@homeassistan/shared": "workspace:*",
-    "bcrypt": "^5.1.1",
+    "bcryptjs": "^3.0.3",
     "dotenv": "^16.4.0",
     "drizzle-orm": "^0.38.0",
     "postgres": "^3.4.0"
   },
   "devDependencies": {
-    "@types/bcrypt": "^5.0.2",
     "@types/node": "^22.0.0",
     "drizzle-kit": "^0.30.0",
     "rimraf": "^6.0.0",

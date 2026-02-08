@@ -2,7 +2,7 @@
 // Auth Service
 // ══════════════════════════════════════════════
 
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import jwt, { type SignOptions } from "jsonwebtoken";
 import { eq } from "drizzle-orm";
 import { db, houses, users, houseMembers, sessions } from "@homeassistan/database";

@@ -3,7 +3,7 @@
 // ══════════════════════════════════════════════
 
 import "dotenv/config";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { houses, users, houseMembers } from "./schema/index";
