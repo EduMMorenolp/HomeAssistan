@@ -1,0 +1,29 @@
+{
+  "name": "homeassistan",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Sistema Operativo Integral para la Gestión del Hogar",
+  "scripts": {
+    "dev": "concurrently -n web,server -c blue,green \"pnpm dev:web\" \"pnpm dev:server\"",
+    "dev:web": "pnpm --filter @homeassistan/web dev",
+    "dev:server": "pnpm --filter @homeassistan/server dev",
+    "build": "pnpm --filter @homeassistan/shared build && pnpm --filter @homeassistan/database build && pnpm --filter @homeassistan/server build && pnpm --filter @homeassistan/web build",
+    "build:web": "pnpm --filter @homeassistan/web build",
+    "build:server": "pnpm --filter @homeassistan/server build",
+    "db:generate": "pnpm --filter @homeassistan/database db:generate",
+    "db:push": "pnpm --filter @homeassistan/database db:push",
+    "db:migrate": "pnpm --filter @homeassistan/database db:migrate",
+    "db:studio": "pnpm --filter @homeassistan/database db:studio",
+    "db:seed": "pnpm --filter @homeassistan/database db:seed",
+    "lint": "pnpm -r lint",
+    "clean": "pnpm -r clean"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0",
+    "typescript": "^5.7.0"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=9.0.0"
+  }
+}

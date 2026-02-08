@@ -1,0 +1,21 @@
+@import "tailwindcss";
+
+/* ═══════════════════════════════════════════
+   HomeAsisstan - Global Styles
+   ═══════════════════════════════════════════ */
+
+:root {
+  --color-primary: #3b82f6;
+  --color-primary-dark: #2563eb;
+  --color-secondary: #8b5cf6;
+  --color-success: #22c55e;
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
+  --color-info: #06b6d4;
+}
+
+/* Focus mode: botones grandes */
+.focus-mode {
+  --btn-min-height: 4rem;
+  --font-size-base: 1.25rem;
+}
