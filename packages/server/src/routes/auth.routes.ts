@@ -31,49 +31,37 @@ const refreshSchema = z.object({
 // ── Endpoints ────────────────────────────────
 
 /** Paso 1: Seleccionar casa con PIN */
-authRouter.post(
-  "/house/select",
-  validate(houseSelectSchema),
-  async (req, res, next) => {
-    try {
-      const result = await authService.selectHouse(req.body);
-      const response: ApiResponse = { success: true, data: result };
-      res.json(response);
-    } catch (error) {
-      next(error);
-    }
+authRouter.post("/house/select", validate(houseSelectSchema), async (req, res, next) => {
+  try {
+    const result = await authService.selectHouse(req.body);
+    const response: ApiResponse = { success: true, data: result };
+    res.json(response);
+  } catch (error) {
+    next(error);
   }
-);
+});
 
 /** Paso 2: Login de usuario */
-authRouter.post(
-  "/user/login",
-  validate(userLoginSchema),
-  async (req, res, next) => {
-    try {
-      const result = await authService.loginUser(req.body);
-      const response: ApiResponse = { success: true, data: result };
-      res.json(response);
-    } catch (error) {
-      next(error);
-    }
+authRouter.post("/user/login", validate(userLoginSchema), async (req, res, next) => {
+  try {
+    const result = await authService.loginUser(req.body);
+    const response: ApiResponse = { success: true, data: result };
+    res.json(response);
+  } catch (error) {
+    next(error);
   }
-);
+});
 
 /** Refresh token */
-authRouter.post(
-  "/refresh",
-  validate(refreshSchema),
-  async (req, res, next) => {
-    try {
-      const result = await authService.refreshToken(req.body.refreshToken);
-      const response: ApiResponse = { success: true, data: result };
-      res.json(response);
-    } catch (error) {
-      next(error);
-    }
+authRouter.post("/refresh", validate(refreshSchema), async (req, res, next) => {
+  try {
+    const result = await authService.refreshToken(req.body.refreshToken);
+    const response: ApiResponse = { success: true, data: result };
+    res.json(response);
+  } catch (error) {
+    next(error);
   }
-);
+});
 
 /** Logout */
 authRouter.post("/logout", authenticate, async (req, res, next) => {

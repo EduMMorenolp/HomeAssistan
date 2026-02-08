@@ -15,9 +15,7 @@ healthRouter.use(authenticate);
 // ── Schemas ──────────────────────────────────
 
 const upsertProfileSchema = z.object({
-  bloodType: z
-    .enum(["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "unknown"])
-    .optional(),
+  bloodType: z.enum(["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "unknown"]).optional(),
   allergies: z.array(z.string()).optional(),
   conditions: z.array(z.string()).optional(),
   emergencyNotes: z.string().max(500).optional(),
@@ -84,23 +82,19 @@ healthRouter.get("/profiles", async (req, res, next) => {
   }
 });
 
-healthRouter.put(
-  "/profiles",
-  validate(upsertProfileSchema),
-  async (req, res, next) => {
-    try {
-      const data = await healthService.upsertHealthProfile(
-        req.user!.userId,
-        req.user!.houseId,
-        req.body,
-      );
-      const response: ApiResponse = { success: true, data };
-      res.json(response);
-    } catch (error) {
-      next(error);
-    }
-  },
-);
+healthRouter.put("/profiles", validate(upsertProfileSchema), async (req, res, next) => {
+  try {
+    const data = await healthService.upsertHealthProfile(
+      req.user!.userId,
+      req.user!.houseId,
+      req.body,
+    );
+    const response: ApiResponse = { success: true, data };
+    res.json(response);
+  } catch (error) {
+    next(error);
+  }
+});
 
 // ══════════════════════════════════════════════
 // MEDICAMENTOS
@@ -116,40 +110,29 @@ healthRouter.get("/medications", async (req, res, next) => {
   }
 });
 
-healthRouter.post(
-  "/medications",
-  validate(createMedicationSchema),
-  async (req, res, next) => {
-    try {
-      const data = await healthService.createMedication(
-        req.user!.houseId,
-        req.body,
-      );
-      const response: ApiResponse = { success: true, data };
-      res.status(201).json(response);
-    } catch (error) {
-      next(error);
-    }
-  },
-);
+healthRouter.post("/medications", validate(createMedicationSchema), async (req, res, next) => {
+  try {
+    const data = await healthService.createMedication(req.user!.houseId, req.body);
+    const response: ApiResponse = { success: true, data };
+    res.status(201).json(response);
+  } catch (error) {
+    next(error);
+  }
+});
 
-healthRouter.put(
-  "/medications/:id",
-  validate(updateMedicationSchema),
-  async (req, res, next) => {
-    try {
-      const data = await healthService.updateMedication(
-        req.params.id as string,
-        req.user!.houseId,
-        req.body,
-      );
-      const response: ApiResponse = { success: true, data };
-      res.json(response);
-    } catch (error) {
-      next(error);
-    }
-  },
-);
+healthRouter.put("/medications/:id", validate(updateMedicationSchema), async (req, res, next) => {
+  try {
+    const data = await healthService.updateMedication(
+      req.params.id as string,
+      req.user!.houseId,
+      req.body,
+    );
+    const response: ApiResponse = { success: true, data };
+    res.json(response);
+  } catch (error) {
+    next(error);
+  }
+});
 
 healthRouter.delete("/medications/:id", async (req, res, next) => {
   try {
@@ -163,22 +146,15 @@ healthRouter.delete("/medications/:id", async (req, res, next) => {
 
 // ── Medication Logs ──────────────────────────
 
-healthRouter.post(
-  "/medications/log",
-  validate(logMedicationSchema),
-  async (req, res, next) => {
-    try {
-      const data = await healthService.logMedication(
-        req.user!.userId,
-        req.body,
-      );
-      const response: ApiResponse = { success: true, data };
-      res.status(201).json(response);
-    } catch (error) {
-      next(error);
-    }
-  },
-);
+healthRouter.post("/medications/log", validate(logMedicationSchema), async (req, res, next) => {
+  try {
+    const data = await healthService.logMedication(req.user!.userId, req.body);
+    const response: ApiResponse = { success: true, data };
+    res.status(201).json(response);
+  } catch (error) {
+    next(error);
+  }
+});
 
 healthRouter.get("/medications/:id/logs", async (req, res, next) => {
   try {
@@ -204,22 +180,15 @@ healthRouter.get("/routines", async (req, res, next) => {
   }
 });
 
-healthRouter.post(
-  "/routines",
-  validate(createRoutineSchema),
-  async (req, res, next) => {
-    try {
-      const data = await healthService.createHealthRoutine(
-        req.user!.houseId,
-        req.body,
-      );
-      const response: ApiResponse = { success: true, data };
-      res.status(201).json(response);
-    } catch (error) {
-      next(error);
-    }
-  },
-);
+healthRouter.post("/routines", validate(createRoutineSchema), async (req, res, next) => {
+  try {
+    const data = await healthService.createHealthRoutine(req.user!.houseId, req.body);
+    const response: ApiResponse = { success: true, data };
+    res.status(201).json(response);
+  } catch (error) {
+    next(error);
+  }
+});
 
 healthRouter.delete("/routines/:id", async (req, res, next) => {
   try {

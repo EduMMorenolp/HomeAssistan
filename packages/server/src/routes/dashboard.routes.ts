@@ -37,10 +37,7 @@ dashboardRouter.get("/stats", async (req, res, next) => {
 
 dashboardRouter.get("/preferences", async (req, res, next) => {
   try {
-    const data = await dashboardService.getPreferences(
-      req.user!.userId,
-      req.user!.houseId,
-    );
+    const data = await dashboardService.getPreferences(req.user!.userId, req.user!.houseId);
     const response: ApiResponse = { success: true, data };
     res.json(response);
   } catch (error) {
@@ -48,23 +45,19 @@ dashboardRouter.get("/preferences", async (req, res, next) => {
   }
 });
 
-dashboardRouter.put(
-  "/preferences",
-  validate(updatePreferencesSchema),
-  async (req, res, next) => {
-    try {
-      const data = await dashboardService.updatePreferences(
-        req.user!.userId,
-        req.user!.houseId,
-        req.body,
-      );
-      const response: ApiResponse = { success: true, data };
-      res.json(response);
-    } catch (error) {
-      next(error);
-    }
-  },
-);
+dashboardRouter.put("/preferences", validate(updatePreferencesSchema), async (req, res, next) => {
+  try {
+    const data = await dashboardService.updatePreferences(
+      req.user!.userId,
+      req.user!.houseId,
+      req.body,
+    );
+    const response: ApiResponse = { success: true, data };
+    res.json(response);
+  } catch (error) {
+    next(error);
+  }
+});
 
 // ── Activity Log ─────────────────────────────
 

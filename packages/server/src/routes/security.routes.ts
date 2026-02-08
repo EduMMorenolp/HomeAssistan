@@ -31,9 +31,7 @@ const updateContactSchema = z.object({
 });
 
 const createVaultSchema = z.object({
-  category: z.enum([
-    "wifi", "alarm", "safe", "insurance", "utility", "subscription", "other",
-  ]),
+  category: z.enum(["wifi", "alarm", "safe", "insurance", "utility", "subscription", "other"]),
   label: z.string().min(1).max(150),
   value: z.string().min(1).max(500),
   notes: z.string().max(500).optional(),
@@ -67,47 +65,33 @@ securityRouter.get("/contacts", async (req, res, next) => {
   }
 });
 
-securityRouter.post(
-  "/contacts",
-  validate(createContactSchema),
-  async (req, res, next) => {
-    try {
-      const data = await securityService.createEmergencyContact(
-        req.user!.houseId,
-        req.body,
-      );
-      const response: ApiResponse = { success: true, data };
-      res.status(201).json(response);
-    } catch (error) {
-      next(error);
-    }
-  },
-);
+securityRouter.post("/contacts", validate(createContactSchema), async (req, res, next) => {
+  try {
+    const data = await securityService.createEmergencyContact(req.user!.houseId, req.body);
+    const response: ApiResponse = { success: true, data };
+    res.status(201).json(response);
+  } catch (error) {
+    next(error);
+  }
+});
 
-securityRouter.put(
-  "/contacts/:id",
-  validate(updateContactSchema),
-  async (req, res, next) => {
-    try {
-      const data = await securityService.updateEmergencyContact(
-        req.params.id as string,
-        req.user!.houseId,
-        req.body,
-      );
-      const response: ApiResponse = { success: true, data };
-      res.json(response);
-    } catch (error) {
-      next(error);
-    }
-  },
-);
+securityRouter.put("/contacts/:id", validate(updateContactSchema), async (req, res, next) => {
+  try {
+    const data = await securityService.updateEmergencyContact(
+      req.params.id as string,
+      req.user!.houseId,
+      req.body,
+    );
+    const response: ApiResponse = { success: true, data };
+    res.json(response);
+  } catch (error) {
+    next(error);
+  }
+});
 
 securityRouter.delete("/contacts/:id", async (req, res, next) => {
   try {
-    await securityService.deleteEmergencyContact(
-      req.params.id as string,
-      req.user!.houseId,
-    );
+    await securityService.deleteEmergencyContact(req.params.id as string, req.user!.houseId);
     const response: ApiResponse = { success: true, data: null };
     res.json(response);
   } catch (error) {
@@ -119,19 +103,15 @@ securityRouter.delete("/contacts/:id", async (req, res, next) => {
 // BÓVEDA SEGURA
 // ══════════════════════════════════════════════
 
-securityRouter.get(
-  "/vault",
-  authorize("admin", "responsible"),
-  async (req, res, next) => {
-    try {
-      const data = await securityService.getVaultEntries(req.user!.houseId);
-      const response: ApiResponse = { success: true, data };
-      res.json(response);
-    } catch (error) {
-      next(error);
-    }
-  },
-);
+securityRouter.get("/vault", authorize("admin", "responsible"), async (req, res, next) => {
+  try {
+    const data = await securityService.getVaultEntries(req.user!.houseId);
+    const response: ApiResponse = { success: true, data };
+    res.json(response);
+  } catch (error) {
+    next(error);
+  }
+});
 
 securityRouter.post(
   "/vault",
@@ -171,19 +151,15 @@ securityRouter.put(
   },
 );
 
-securityRouter.delete(
-  "/vault/:id",
-  authorize("admin", "responsible"),
-  async (req, res, next) => {
-    try {
-      await securityService.deleteVaultEntry(req.params.id as string, req.user!.houseId);
-      const response: ApiResponse = { success: true, data: null };
-      res.json(response);
-    } catch (error) {
-      next(error);
-    }
-  },
-);
+securityRouter.delete("/vault/:id", authorize("admin", "responsible"), async (req, res, next) => {
+  try {
+    await securityService.deleteVaultEntry(req.params.id as string, req.user!.houseId);
+    const response: ApiResponse = { success: true, data: null };
+    res.json(response);
+  } catch (error) {
+    next(error);
+  }
+});
 
 // ══════════════════════════════════════════════
 // CÓDIGOS DE VISITANTE
@@ -223,10 +199,7 @@ securityRouter.delete(
   authorize("admin", "responsible"),
   async (req, res, next) => {
     try {
-      await securityService.deleteVisitorCode(
-        req.params.id as string,
-        req.user!.houseId,
-      );
+      await securityService.deleteVisitorCode(req.params.id as string, req.user!.houseId);
       const response: ApiResponse = { success: true, data: null };
       res.json(response);
     } catch (error) {
@@ -239,16 +212,12 @@ securityRouter.delete(
 // LOGS DE ACCESO
 // ══════════════════════════════════════════════
 
-securityRouter.get(
-  "/access-logs",
-  authorize("admin"),
-  async (req, res, next) => {
-    try {
-      const data = await securityService.getAccessLogs(req.user!.houseId);
-      const response: ApiResponse = { success: true, data };
-      res.json(response);
-    } catch (error) {
-      next(error);
-    }
-  },
-);
+securityRouter.get("/access-logs", authorize("admin"), async (req, res, next) => {
+  try {
+    const data = await securityService.getAccessLogs(req.user!.houseId);
+    const response: ApiResponse = { success: true, data };
+    res.json(response);
+  } catch (error) {
+    next(error);
+  }
+});

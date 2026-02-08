@@ -51,12 +51,7 @@ export async function upsertHealthProfile(
   const [existing] = await db
     .select()
     .from(healthProfiles)
-    .where(
-      and(
-        eq(healthProfiles.userId, userId),
-        eq(healthProfiles.houseId, houseId),
-      )
-    );
+    .where(and(eq(healthProfiles.userId, userId), eq(healthProfiles.houseId, houseId)));
 
   if (existing) {
     const [updated] = await db
@@ -101,10 +96,7 @@ export async function getMedications(houseId: string) {
     .orderBy(desc(medications.createdAt));
 }
 
-export async function createMedication(
-  houseId: string,
-  data: CreateMedicationRequest,
-) {
+export async function createMedication(houseId: string, data: CreateMedicationRequest) {
   const [row] = await db
     .insert(medications)
     .values({
@@ -124,11 +116,7 @@ export async function createMedication(
   return row;
 }
 
-export async function updateMedication(
-  id: string,
-  houseId: string,
-  data: UpdateMedicationRequest,
-) {
+export async function updateMedication(id: string, houseId: string, data: UpdateMedicationRequest) {
   const [existing] = await db
     .select()
     .from(medications)
@@ -168,10 +156,7 @@ export async function deleteMedication(id: string, houseId: string) {
 
 // ── Medication Logs ──────────────────────────
 
-export async function logMedication(
-  userId: string,
-  data: LogMedicationRequest,
-) {
+export async function logMedication(userId: string, data: LogMedicationRequest) {
   const [row] = await db
     .insert(medicationLogs)
     .values({
@@ -223,10 +208,7 @@ export async function getHealthRoutines(houseId: string) {
     .where(eq(healthRoutines.houseId, houseId));
 }
 
-export async function createHealthRoutine(
-  houseId: string,
-  data: CreateHealthRoutineRequest,
-) {
+export async function createHealthRoutine(houseId: string, data: CreateHealthRoutineRequest) {
   const [row] = await db
     .insert(healthRoutines)
     .values({

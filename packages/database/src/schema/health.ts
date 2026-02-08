@@ -18,7 +18,15 @@ import { users } from "./users";
 
 // ── Perfiles de salud ────────────────────────
 export const bloodTypeEnum = pgEnum("blood_type", [
-  "A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "unknown",
+  "A+",
+  "A-",
+  "B+",
+  "B-",
+  "AB+",
+  "AB-",
+  "O+",
+  "O-",
+  "unknown",
 ]);
 
 export const healthProfiles = pgTable("health_profiles", {
@@ -36,9 +44,7 @@ export const healthProfiles = pgTable("health_profiles", {
   doctorName: varchar("doctor_name", { length: 150 }),
   doctorPhone: varchar("doctor_phone", { length: 30 }),
   insuranceInfo: text("insurance_info"),
-  updatedAt: timestamp("updated_at", { withTimezone: true })
-    .defaultNow()
-    .notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
 export type HealthProfile = typeof healthProfiles.$inferSelect;
@@ -72,9 +78,7 @@ export const medications = pgTable("medications", {
   isActive: boolean("is_active").default(true).notNull(),
   startDate: timestamp("start_date", { withTimezone: true }),
   endDate: timestamp("end_date", { withTimezone: true }),
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .defaultNow()
-    .notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
 export type Medication = typeof medications.$inferSelect;
@@ -86,11 +90,8 @@ export const medicationLogs = pgTable("medication_logs", {
   medicationId: uuid("medication_id")
     .references(() => medications.id, { onDelete: "cascade" })
     .notNull(),
-  userId: uuid("user_id")
-    .references(() => users.id, { onDelete: "set null" }),
-  takenAt: timestamp("taken_at", { withTimezone: true })
-    .defaultNow()
-    .notNull(),
+  userId: uuid("user_id").references(() => users.id, { onDelete: "set null" }),
+  takenAt: timestamp("taken_at", { withTimezone: true }).defaultNow().notNull(),
   wasSkipped: boolean("was_skipped").default(false).notNull(),
   note: text("note"),
 });
@@ -112,9 +113,7 @@ export const healthRoutines = pgTable("health_routines", {
   timeOfDay: time("time_of_day"),
   daysOfWeek: varchar("days_of_week", { length: 20 }), // e.g. "1,2,3,4,5"
   isActive: boolean("is_active").default(true).notNull(),
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .defaultNow()
-    .notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
 export type HealthRoutine = typeof healthRoutines.$inferSelect;

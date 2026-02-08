@@ -2,15 +2,7 @@
 // Schema: Comunicación (Muro, Chat, Notificaciones)
 // ══════════════════════════════════════════════
 
-import {
-  pgTable,
-  uuid,
-  varchar,
-  text,
-  timestamp,
-  boolean,
-  pgEnum,
-} from "drizzle-orm/pg-core";
+import { pgTable, uuid, varchar, text, timestamp, boolean, pgEnum } from "drizzle-orm/pg-core";
 import { houses } from "./houses";
 import { users } from "./users";
 
@@ -26,18 +18,13 @@ export const announcements = pgTable("announcements", {
   houseId: uuid("house_id")
     .references(() => houses.id, { onDelete: "cascade" })
     .notNull(),
-  authorId: uuid("author_id")
-    .references(() => users.id, { onDelete: "set null" }),
+  authorId: uuid("author_id").references(() => users.id, { onDelete: "set null" }),
   title: varchar("title", { length: 200 }).notNull(),
   content: text("content").notNull(),
   priority: announcementPriorityEnum("priority").default("normal").notNull(),
   isPinned: boolean("is_pinned").default(false).notNull(),
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .defaultNow()
-    .notNull(),
-  updatedAt: timestamp("updated_at", { withTimezone: true })
-    .defaultNow()
-    .notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
 export type Announcement = typeof announcements.$inferSelect;
@@ -49,13 +36,10 @@ export const messages = pgTable("messages", {
   houseId: uuid("house_id")
     .references(() => houses.id, { onDelete: "cascade" })
     .notNull(),
-  senderId: uuid("sender_id")
-    .references(() => users.id, { onDelete: "set null" }),
+  senderId: uuid("sender_id").references(() => users.id, { onDelete: "set null" }),
   content: text("content").notNull(),
   isEdited: boolean("is_edited").default(false).notNull(),
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .defaultNow()
-    .notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
 export type Message = typeof messages.$inferSelect;
@@ -86,9 +70,7 @@ export const notifications = pgTable("notifications", {
   body: text("body"),
   isRead: boolean("is_read").default(false).notNull(),
   link: varchar("link", { length: 500 }),
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .defaultNow()
-    .notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
 export type Notification = typeof notifications.$inferSelect;
@@ -100,16 +82,12 @@ export const panicPings = pgTable("panic_pings", {
   houseId: uuid("house_id")
     .references(() => houses.id, { onDelete: "cascade" })
     .notNull(),
-  triggeredBy: uuid("triggered_by")
-    .references(() => users.id, { onDelete: "set null" }),
+  triggeredBy: uuid("triggered_by").references(() => users.id, { onDelete: "set null" }),
   message: text("message"),
   isResolved: boolean("is_resolved").default(false).notNull(),
-  resolvedBy: uuid("resolved_by")
-    .references(() => users.id, { onDelete: "set null" }),
+  resolvedBy: uuid("resolved_by").references(() => users.id, { onDelete: "set null" }),
   resolvedAt: timestamp("resolved_at", { withTimezone: true }),
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .defaultNow()
-    .notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
 export type PanicPing = typeof panicPings.$inferSelect;

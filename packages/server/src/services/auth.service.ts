@@ -21,14 +21,8 @@ const REFRESH_OPTS: SignOptions = { expiresIn: JWT_EXPIRES_IN as any };
 const SALT_ROUNDS = 12;
 
 /** Paso 1: Seleccionar casa con PIN general */
-export async function selectHouse(
-  data: HouseSelectRequest
-): Promise<HouseSelectResponse> {
-  const [house] = await db
-    .select()
-    .from(houses)
-    .where(eq(houses.id, data.houseId))
-    .limit(1);
+export async function selectHouse(data: HouseSelectRequest): Promise<HouseSelectResponse> {
+  const [house] = await db.select().from(houses).where(eq(houses.id, data.houseId)).limit(1);
 
   if (!house) {
     throw new AppError(404, "HOUSE_NOT_FOUND", "Casa no encontrada");
@@ -69,9 +63,7 @@ export async function selectHouse(
 }
 
 /** Paso 2: Login de usuario con PIN personal */
-export async function loginUser(
-  data: UserLoginRequest
-): Promise<UserLoginResponse> {
+export async function loginUser(data: UserLoginRequest): Promise<UserLoginResponse> {
   // Verificar house token
   let houseId: string;
   try {
@@ -84,11 +76,7 @@ export async function loginUser(
   }
 
   // Buscar usuario
-  const [user] = await db
-    .select()
-    .from(users)
-    .where(eq(users.id, data.userId))
-    .limit(1);
+  const [user] = await db.select().from(users).where(eq(users.id, data.userId)).limit(1);
 
   if (!user) {
     throw new AppError(404, "USER_NOT_FOUND", "Usuario no encontrado");
@@ -143,7 +131,7 @@ export async function loginUser(
 
 /** Refrescar access token */
 export async function refreshToken(
-  token: string
+  token: string,
 ): Promise<{ accessToken: string; refreshToken: string }> {
   // Buscar sesión válida
   const [session] = await db
@@ -169,10 +157,7 @@ export async function refreshToken(
   }
 
   // Revocar token anterior
-  await db
-    .update(sessions)
-    .set({ isRevoked: true })
-    .where(eq(sessions.id, session.id));
+  await db.update(sessions).set({ isRevoked: true }).where(eq(sessions.id, session.id));
 
   // Generar nuevos tokens
   const newPayload: JwtPayload = {
@@ -197,10 +182,7 @@ export async function refreshToken(
 
 /** Cerrar sesión */
 export async function logout(userId: string): Promise<void> {
-  await db
-    .update(sessions)
-    .set({ isRevoked: true })
-    .where(eq(sessions.userId, userId));
+  await db.update(sessions).set({ isRevoked: true }).where(eq(sessions.userId, userId));
 }
 
 /** Helper: hash de PIN */

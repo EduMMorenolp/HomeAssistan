@@ -12,10 +12,7 @@ import {
   userPoints,
   users,
 } from "@homeassistan/database";
-import type {
-  CreateTaskRequest,
-  UpdateTaskRequest,
-} from "@homeassistan/shared";
+import type { CreateTaskRequest, UpdateTaskRequest } from "@homeassistan/shared";
 import { AppError } from "../middleware/error-handler";
 
 // ── CRUD Tareas ──────────────────────────────
@@ -63,11 +60,7 @@ export async function getTasksByHouse(houseId: string) {
 }
 
 export async function getTaskById(taskId: string) {
-  const [task] = await db
-    .select()
-    .from(tasks)
-    .where(eq(tasks.id, taskId))
-    .limit(1);
+  const [task] = await db.select().from(tasks).where(eq(tasks.id, taskId)).limit(1);
 
   if (!task) {
     throw new AppError(404, "TASK_NOT_FOUND", "Tarea no encontrada");
@@ -86,11 +79,7 @@ export async function getTaskById(taskId: string) {
   return { ...task, assignees };
 }
 
-export async function createTask(
-  houseId: string,
-  userId: string,
-  data: CreateTaskRequest
-) {
+export async function createTask(houseId: string, userId: string, data: CreateTaskRequest) {
   const [task] = await db
     .insert(tasks)
     .values({
@@ -112,7 +101,7 @@ export async function createTask(
       data.assigneeIds.map((uid) => ({
         taskId: task.id,
         userId: uid,
-      }))
+      })),
     );
   }
 
@@ -131,11 +120,7 @@ export async function updateTask(taskId: string, data: UpdateTaskRequest) {
   if (data.recurrence !== undefined) updateData.recurrence = data.recurrence;
   if (data.points !== undefined) updateData.points = data.points;
 
-  const [task] = await db
-    .update(tasks)
-    .set(updateData)
-    .where(eq(tasks.id, taskId))
-    .returning();
+  const [task] = await db.update(tasks).set(updateData).where(eq(tasks.id, taskId)).returning();
 
   if (!task) {
     throw new AppError(404, "TASK_NOT_FOUND", "Tarea no encontrada");
@@ -145,10 +130,7 @@ export async function updateTask(taskId: string, data: UpdateTaskRequest) {
 }
 
 export async function deleteTask(taskId: string) {
-  const [task] = await db
-    .delete(tasks)
-    .where(eq(tasks.id, taskId))
-    .returning({ id: tasks.id });
+  const [task] = await db.delete(tasks).where(eq(tasks.id, taskId)).returning({ id: tasks.id });
 
   if (!task) {
     throw new AppError(404, "TASK_NOT_FOUND", "Tarea no encontrada");
@@ -159,9 +141,7 @@ export async function deleteTask(taskId: string) {
 
 export async function assignTask(taskId: string, userIds: string[]) {
   // Eliminar asignaciones anteriores
-  await db
-    .delete(taskAssignments)
-    .where(eq(taskAssignments.taskId, taskId));
+  await db.delete(taskAssignments).where(eq(taskAssignments.taskId, taskId));
 
   if (userIds.length === 0) return [];
 
@@ -173,16 +153,8 @@ export async function assignTask(taskId: string, userIds: string[]) {
 
 // ── Completar tarea ──────────────────────────
 
-export async function completeTask(
-  taskId: string,
-  userId: string,
-  note?: string
-) {
-  const [task] = await db
-    .select()
-    .from(tasks)
-    .where(eq(tasks.id, taskId))
-    .limit(1);
+export async function completeTask(taskId: string, userId: string, note?: string) {
+  const [task] = await db.select().from(tasks).where(eq(tasks.id, taskId)).limit(1);
 
   if (!task) {
     throw new AppError(404, "TASK_NOT_FOUND", "Tarea no encontrada");
@@ -222,9 +194,7 @@ export async function setRotation(config: {
   isActive?: boolean;
 }) {
   // Upsert: eliminar rotación existente y crear nueva
-  await db
-    .delete(taskRotations)
-    .where(eq(taskRotations.taskId, config.taskId));
+  await db.delete(taskRotations).where(eq(taskRotations.taskId, config.taskId));
 
   const [rotation] = await db
     .insert(taskRotations)
@@ -248,9 +218,7 @@ async function advanceRotation(taskId: string) {
   const [rotation] = await db
     .select()
     .from(taskRotations)
-    .where(
-      and(eq(taskRotations.taskId, taskId), eq(taskRotations.isActive, true))
-    )
+    .where(and(eq(taskRotations.taskId, taskId), eq(taskRotations.isActive, true)))
     .limit(1);
 
   if (!rotation) return;
@@ -275,17 +243,11 @@ async function advanceRotation(taskId: string) {
 
 // ── Gamificación ─────────────────────────────
 
-async function updateUserPoints(
-  userId: string,
-  houseId: string,
-  points: number
-) {
+async function updateUserPoints(userId: string, houseId: string, points: number) {
   const [existing] = await db
     .select()
     .from(userPoints)
-    .where(
-      and(eq(userPoints.userId, userId), eq(userPoints.houseId, houseId))
-    )
+    .where(and(eq(userPoints.userId, userId), eq(userPoints.houseId, houseId)))
     .limit(1);
 
   if (existing) {

@@ -110,41 +110,26 @@ financeRouter.get("/expenses/summary", async (req, res, next) => {
 });
 
 /** Crear gasto */
-financeRouter.post(
-  "/expenses",
-  validate(createExpenseSchema),
-  async (req, res, next) => {
-    try {
-      const data = await financeService.createExpense(
-        req.user!.houseId,
-        req.user!.userId,
-        req.body
-      );
-      const response: ApiResponse = { success: true, data };
-      res.status(201).json(response);
-    } catch (error) {
-      next(error);
-    }
+financeRouter.post("/expenses", validate(createExpenseSchema), async (req, res, next) => {
+  try {
+    const data = await financeService.createExpense(req.user!.houseId, req.user!.userId, req.body);
+    const response: ApiResponse = { success: true, data };
+    res.status(201).json(response);
+  } catch (error) {
+    next(error);
   }
-);
+});
 
 /** Actualizar gasto */
-financeRouter.patch(
-  "/expenses/:id",
-  validate(updateExpenseSchema),
-  async (req, res, next) => {
-    try {
-      const data = await financeService.updateExpense(
-        req.params.id as string,
-        req.body
-      );
-      const response: ApiResponse = { success: true, data };
-      res.json(response);
-    } catch (error) {
-      next(error);
-    }
+financeRouter.patch("/expenses/:id", validate(updateExpenseSchema), async (req, res, next) => {
+  try {
+    const data = await financeService.updateExpense(req.params.id as string, req.body);
+    const response: ApiResponse = { success: true, data };
+    res.json(response);
+  } catch (error) {
+    next(error);
   }
-);
+});
 
 /** Eliminar gasto */
 financeRouter.delete("/expenses/:id", async (req, res, next) => {
@@ -176,31 +161,24 @@ financeRouter.get("/shopping", async (req, res, next) => {
 });
 
 /** Añadir artículo */
-financeRouter.post(
-  "/shopping",
-  validate(createShoppingSchema),
-  async (req, res, next) => {
-    try {
-      const data = await financeService.addShoppingItem(
-        req.user!.houseId,
-        req.user!.userId,
-        req.body
-      );
-      const response: ApiResponse = { success: true, data };
-      res.status(201).json(response);
-    } catch (error) {
-      next(error);
-    }
+financeRouter.post("/shopping", validate(createShoppingSchema), async (req, res, next) => {
+  try {
+    const data = await financeService.addShoppingItem(
+      req.user!.houseId,
+      req.user!.userId,
+      req.body,
+    );
+    const response: ApiResponse = { success: true, data };
+    res.status(201).json(response);
+  } catch (error) {
+    next(error);
   }
-);
+});
 
 /** Marcar/desmarcar como comprado */
 financeRouter.patch("/shopping/:id/toggle", async (req, res, next) => {
   try {
-    const data = await financeService.toggleShoppingItem(
-      req.params.id as string,
-      req.user!.userId
-    );
+    const data = await financeService.toggleShoppingItem(req.params.id as string, req.user!.userId);
     const response: ApiResponse = { success: true, data };
     res.json(response);
   } catch (error) {
@@ -252,40 +230,26 @@ financeRouter.get("/inventory", async (req, res, next) => {
 });
 
 /** Crear artículo de inventario */
-financeRouter.post(
-  "/inventory",
-  validate(createInventorySchema),
-  async (req, res, next) => {
-    try {
-      const data = await financeService.createInventoryItem(
-        req.user!.houseId,
-        req.body
-      );
-      const response: ApiResponse = { success: true, data };
-      res.status(201).json(response);
-    } catch (error) {
-      next(error);
-    }
+financeRouter.post("/inventory", validate(createInventorySchema), async (req, res, next) => {
+  try {
+    const data = await financeService.createInventoryItem(req.user!.houseId, req.body);
+    const response: ApiResponse = { success: true, data };
+    res.status(201).json(response);
+  } catch (error) {
+    next(error);
   }
-);
+});
 
 /** Actualizar artículo de inventario */
-financeRouter.patch(
-  "/inventory/:id",
-  validate(updateInventorySchema),
-  async (req, res, next) => {
-    try {
-      const data = await financeService.updateInventoryItem(
-        req.params.id as string,
-        req.body
-      );
-      const response: ApiResponse = { success: true, data };
-      res.json(response);
-    } catch (error) {
-      next(error);
-    }
+financeRouter.patch("/inventory/:id", validate(updateInventorySchema), async (req, res, next) => {
+  try {
+    const data = await financeService.updateInventoryItem(req.params.id as string, req.body);
+    const response: ApiResponse = { success: true, data };
+    res.json(response);
+  } catch (error) {
+    next(error);
   }
-);
+});
 
 /** Eliminar artículo de inventario */
 financeRouter.delete("/inventory/:id", async (req, res, next) => {

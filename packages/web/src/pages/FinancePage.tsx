@@ -32,10 +32,7 @@ import type {
   CreateHouseholdItemRequest,
   UpdateHouseholdItemRequest,
 } from "@homeassistan/shared";
-import {
-  EXPENSE_CATEGORY_LABELS,
-  EXPENSE_CATEGORY_COLORS,
-} from "@homeassistan/shared";
+import { EXPENSE_CATEGORY_LABELS, EXPENSE_CATEGORY_COLORS } from "@homeassistan/shared";
 
 type TabKey = "expenses" | "shopping" | "inventory";
 
@@ -50,9 +47,7 @@ export function FinancePage() {
     <div className="space-y-4 sm:space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">
-          Finanzas
-        </h1>
+        <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">Finanzas</h1>
         <p className="text-sm text-slate-500 dark:text-slate-400">
           Gastos, compras e inventario del hogar
         </p>
@@ -60,11 +55,13 @@ export function FinancePage() {
 
       {/* Tabs */}
       <div className="flex gap-1 bg-slate-100 dark:bg-slate-800 rounded-lg p-1 w-fit overflow-x-auto">
-        {([
-          { key: "expenses", label: "Gastos", icon: Wallet },
-          { key: "shopping", label: "Compras", icon: ShoppingCart },
-          { key: "inventory", label: "Inventario", icon: Package },
-        ] as const).map((t) => (
+        {(
+          [
+            { key: "expenses", label: "Gastos", icon: Wallet },
+            { key: "shopping", label: "Compras", icon: ShoppingCart },
+            { key: "inventory", label: "Inventario", icon: Package },
+          ] as const
+        ).map((t) => (
           <button
             key={t.key}
             onClick={() => setTab(t.key)}
@@ -72,7 +69,7 @@ export function FinancePage() {
               "flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors whitespace-nowrap",
               tab === t.key
                 ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm"
-                : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+                : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300",
             )}
           >
             <t.icon className="w-4 h-4" />
@@ -165,8 +162,7 @@ function ExpensesSection() {
                   <span
                     className="w-2.5 h-2.5 rounded-full shrink-0"
                     style={{
-                      backgroundColor:
-                        EXPENSE_CATEGORY_COLORS[cat.category] || "#6b7280",
+                      backgroundColor: EXPENSE_CATEGORY_COLORS[cat.category] || "#6b7280",
                     }}
                   />
                   <span className="text-slate-600 dark:text-slate-300 flex-1 truncate">
@@ -190,9 +186,7 @@ function ExpensesSection() {
           </h3>
           <div className="space-y-2">
             {summary.byCategory.map((cat) => {
-              const pct = summary.totalMonth > 0
-                ? (cat.total / summary.totalMonth) * 100
-                : 0;
+              const pct = summary.totalMonth > 0 ? (cat.total / summary.totalMonth) * 100 : 0;
               return (
                 <div key={cat.category} className="space-y-0.5">
                   <div className="flex items-center justify-between text-xs">
@@ -250,8 +244,7 @@ function ExpensesSection() {
               <span
                 className="w-3 h-3 rounded-full shrink-0"
                 style={{
-                  backgroundColor:
-                    EXPENSE_CATEGORY_COLORS[exp.category] || "#6b7280",
+                  backgroundColor: EXPENSE_CATEGORY_COLORS[exp.category] || "#6b7280",
                 }}
               />
               <div className="flex-1 min-w-0">
@@ -282,9 +275,7 @@ function ExpensesSection() {
       )}
 
       {/* Modal añadir gasto */}
-      {showForm && (
-        <CreateExpenseModal onClose={() => setShowForm(false)} />
-      )}
+      {showForm && <CreateExpenseModal onClose={() => setShowForm(false)} />}
     </div>
   );
 }
@@ -324,9 +315,7 @@ function CreateExpenseModal({ onClose }: { onClose: () => void }) {
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
       <div className="relative bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-700">
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
-            Registrar gasto
-          </h2>
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Registrar gasto</h2>
           <button
             onClick={onClose}
             className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
@@ -360,9 +349,7 @@ function CreateExpenseModal({ onClose }: { onClose: () => void }) {
                 step="0.01"
                 min="0.01"
                 value={form.amount || ""}
-                onChange={(e) =>
-                  setForm({ ...form, amount: parseFloat(e.target.value) || 0 })
-                }
+                onChange={(e) => setForm({ ...form, amount: parseFloat(e.target.value) || 0 })}
                 className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-orange-500"
                 placeholder="0.00"
               />
@@ -373,16 +360,16 @@ function CreateExpenseModal({ onClose }: { onClose: () => void }) {
               </label>
               <select
                 value={form.category}
-                onChange={(e) =>
-                  setForm({ ...form, category: e.target.value as ExpenseCategory })
-                }
+                onChange={(e) => setForm({ ...form, category: e.target.value as ExpenseCategory })}
                 className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-orange-500"
               >
-                {(
-                  Object.entries(EXPENSE_CATEGORY_LABELS) as [ExpenseCategory, string][]
-                ).map(([k, v]) => (
-                  <option key={k} value={k}>{v}</option>
-                ))}
+                {(Object.entries(EXPENSE_CATEGORY_LABELS) as [ExpenseCategory, string][]).map(
+                  ([k, v]) => (
+                    <option key={k} value={k}>
+                      {v}
+                    </option>
+                  ),
+                )}
               </select>
             </div>
           </div>
@@ -394,9 +381,7 @@ function CreateExpenseModal({ onClose }: { onClose: () => void }) {
             <input
               type="date"
               value={form.expenseDate ?? ""}
-              onChange={(e) =>
-                setForm({ ...form, expenseDate: e.target.value || undefined })
-              }
+              onChange={(e) => setForm({ ...form, expenseDate: e.target.value || undefined })}
               className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-orange-500"
             />
           </div>
@@ -601,7 +586,7 @@ function ShoppingItemRow({
         <p
           className={cn(
             "text-sm text-slate-900 dark:text-white truncate",
-            item.isPurchased && "line-through text-slate-400 dark:text-slate-500"
+            item.isPurchased && "line-through text-slate-400 dark:text-slate-500",
           )}
         >
           {item.name}
@@ -613,9 +598,7 @@ function ShoppingItemRow({
           )}
         </p>
         {item.estimatedPrice && (
-          <p className="text-xs text-slate-400">
-            ~${parseFloat(item.estimatedPrice).toFixed(2)}
-          </p>
+          <p className="text-xs text-slate-400">~${parseFloat(item.estimatedPrice).toFixed(2)}</p>
         )}
       </div>
       <button
@@ -657,13 +640,7 @@ function InventorySection() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: async ({
-      id,
-      body,
-    }: {
-      id: string;
-      body: UpdateHouseholdItemRequest;
-    }) => {
+    mutationFn: async ({ id, body }: { id: string; body: UpdateHouseholdItemRequest }) => {
       const { data } = await api.patch(`/finance/inventory/${id}`, body);
       return data.data;
     },
@@ -731,7 +708,7 @@ function InventorySection() {
                 "bg-white dark:bg-slate-800 rounded-xl border p-4 transition-all",
                 item.isLow
                   ? "border-yellow-300 dark:border-yellow-700"
-                  : "border-slate-200 dark:border-slate-700"
+                  : "border-slate-200 dark:border-slate-700",
               )}
             >
               <div className="flex items-start justify-between mb-2">
@@ -739,9 +716,7 @@ function InventorySection() {
                   <h4 className="font-medium text-sm text-slate-900 dark:text-white truncate">
                     {item.name}
                   </h4>
-                  {item.category && (
-                    <p className="text-xs text-slate-400">{item.category}</p>
-                  )}
+                  {item.category && <p className="text-xs text-slate-400">{item.category}</p>}
                 </div>
                 <button
                   onClick={() => {
@@ -772,19 +747,13 @@ function InventorySection() {
                       "text-lg font-bold",
                       item.isLow
                         ? "text-yellow-600 dark:text-yellow-400"
-                        : "text-slate-900 dark:text-white"
+                        : "text-slate-900 dark:text-white",
                     )}
                   >
                     {item.quantity}
                   </span>
-                  {item.unit && (
-                    <span className="text-xs text-slate-400 ml-1">
-                      {item.unit}
-                    </span>
-                  )}
-                  <p className="text-[10px] text-slate-400">
-                    min: {item.minQuantity}
-                  </p>
+                  {item.unit && <span className="text-xs text-slate-400 ml-1">{item.unit}</span>}
+                  <p className="text-[10px] text-slate-400">min: {item.minQuantity}</p>
                 </div>
                 <button
                   onClick={() =>
@@ -800,9 +769,7 @@ function InventorySection() {
               </div>
 
               {item.location && (
-                <p className="text-[10px] text-slate-400 mt-2 truncate">
-                  📍 {item.location}
-                </p>
+                <p className="text-[10px] text-slate-400 mt-2 truncate">📍 {item.location}</p>
               )}
             </div>
           ))}
@@ -810,9 +777,7 @@ function InventorySection() {
       )}
 
       {/* Modal crear */}
-      {showForm && (
-        <CreateInventoryModal onClose={() => setShowForm(false)} />
-      )}
+      {showForm && <CreateInventoryModal onClose={() => setShowForm(false)} />}
     </div>
   );
 }
@@ -851,9 +816,7 @@ function CreateInventoryModal({ onClose }: { onClose: () => void }) {
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
       <div className="relative bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-700">
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
-            Nuevo artículo
-          </h2>
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Nuevo artículo</h2>
           <button
             onClick={onClose}
             className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
@@ -886,9 +849,7 @@ function CreateInventoryModal({ onClose }: { onClose: () => void }) {
                 type="number"
                 min={0}
                 value={form.quantity ?? 1}
-                onChange={(e) =>
-                  setForm({ ...form, quantity: parseInt(e.target.value) || 0 })
-                }
+                onChange={(e) => setForm({ ...form, quantity: parseInt(e.target.value) || 0 })}
                 className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-purple-500"
               />
             </div>
@@ -900,9 +861,7 @@ function CreateInventoryModal({ onClose }: { onClose: () => void }) {
                 type="number"
                 min={0}
                 value={form.minQuantity ?? 1}
-                onChange={(e) =>
-                  setForm({ ...form, minQuantity: parseInt(e.target.value) || 0 })
-                }
+                onChange={(e) => setForm({ ...form, minQuantity: parseInt(e.target.value) || 0 })}
                 className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-purple-500"
               />
             </div>

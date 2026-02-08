@@ -22,7 +22,7 @@ export function validate(schema: ZodSchema) {
               field: i.path.join("."),
               message: i.message,
             })),
-          })
+          }),
         );
         return;
       }

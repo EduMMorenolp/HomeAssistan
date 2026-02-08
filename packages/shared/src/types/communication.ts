@@ -3,7 +3,15 @@
 // ══════════════════════════════════════════════
 
 export type AnnouncementPriority = "normal" | "important" | "urgent";
-export type NotificationType = "info" | "warning" | "task" | "event" | "finance" | "health" | "security" | "panic";
+export type NotificationType =
+  | "info"
+  | "warning"
+  | "task"
+  | "event"
+  | "finance"
+  | "health"
+  | "security"
+  | "panic";
 
 export interface AnnouncementInfo {
   id: string;

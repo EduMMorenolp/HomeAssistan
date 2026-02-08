@@ -2,8 +2,22 @@
 // Tipos de Seguridad
 // ══════════════════════════════════════════════
 
-export type VaultCategory = "wifi" | "alarm" | "safe" | "insurance" | "utility" | "subscription" | "other";
-export type AccessAction = "login" | "logout" | "failed_login" | "house_select" | "visitor_code_used" | "panic_triggered" | "vault_accessed";
+export type VaultCategory =
+  | "wifi"
+  | "alarm"
+  | "safe"
+  | "insurance"
+  | "utility"
+  | "subscription"
+  | "other";
+export type AccessAction =
+  | "login"
+  | "logout"
+  | "failed_login"
+  | "house_select"
+  | "visitor_code_used"
+  | "panic_triggered"
+  | "vault_accessed";
 
 export interface EmergencyContactInfo {
   id: string;

@@ -46,9 +46,7 @@ export function authorize(...allowedRoles: string[]) {
       return next(new AppError(401, "UNAUTHORIZED", "No autenticado"));
     }
     if (!allowedRoles.includes(req.user.role)) {
-      return next(
-        new AppError(403, "FORBIDDEN", "No tienes permisos para esta acción")
-      );
+      return next(new AppError(403, "FORBIDDEN", "No tienes permisos para esta acción"));
     }
     next();
   };

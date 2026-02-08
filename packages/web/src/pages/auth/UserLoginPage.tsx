@@ -81,7 +81,7 @@ export function UserLoginPage() {
               "flex flex-col items-center gap-1.5 sm:gap-2 p-3 sm:p-4 rounded-xl border transition-all",
               selectedUserId === member.id
                 ? "border-blue-500 bg-blue-500/10"
-                : "border-white/10 hover:border-white/20 bg-white/5"
+                : "border-white/10 hover:border-white/20 bg-white/5",
             )}
           >
             <div
@@ -89,7 +89,7 @@ export function UserLoginPage() {
                 "w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center text-base sm:text-lg font-bold",
                 selectedUserId === member.id
                   ? "bg-blue-500 text-white"
-                  : "bg-white/10 text-slate-400"
+                  : "bg-white/10 text-slate-400",
               )}
             >
               {member.avatar ? (
@@ -102,9 +102,7 @@ export function UserLoginPage() {
                 member.name.charAt(0).toUpperCase()
               )}
             </div>
-            <span className="text-sm text-white font-medium">
-              {member.name}
-            </span>
+            <span className="text-sm text-white font-medium">{member.name}</span>
           </button>
         ))}
       </div>
@@ -113,9 +111,7 @@ export function UserLoginPage() {
       {selectedUserId && (
         <div className="space-y-4">
           <div>
-            <label className="text-sm text-slate-400 mb-1.5 block">
-              Tu PIN personal
-            </label>
+            <label className="text-sm text-slate-400 mb-1.5 block">Tu PIN personal</label>
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
               <input
@@ -126,11 +122,7 @@ export function UserLoginPage() {
                 placeholder="••••"
                 autoFocus
                 className="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white text-center text-lg tracking-[0.5em] placeholder:tracking-normal placeholder:text-slate-600 focus:outline-none focus:border-blue-500"
-                onKeyDown={(e) =>
-                  e.key === "Enter" &&
-                  pin.length >= 4 &&
-                  loginMutation.mutate()
-                }
+                onKeyDown={(e) => e.key === "Enter" && pin.length >= 4 && loginMutation.mutate()}
               />
             </div>
           </div>

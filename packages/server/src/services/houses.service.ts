@@ -38,11 +38,7 @@ export async function getHouseById(id: string) {
 }
 
 /** Crear nueva casa */
-export async function createHouse(data: {
-  name: string;
-  address?: string;
-  pin: string;
-}) {
+export async function createHouse(data: { name: string; address?: string; pin: string }) {
   const pinHash = await hashPin(data.pin);
 
   const [house] = await db
@@ -65,7 +61,7 @@ export async function createHouse(data: {
 /** Actualizar casa */
 export async function updateHouse(
   id: string,
-  data: { name?: string; address?: string; pin?: string }
+  data: { name?: string; address?: string; pin?: string },
 ) {
   const updateData: Record<string, unknown> = {
     updatedAt: new Date(),
@@ -75,15 +71,11 @@ export async function updateHouse(
   if (data.address !== undefined) updateData.address = data.address;
   if (data.pin) updateData.pinHash = await hashPin(data.pin);
 
-  const [house] = await db
-    .update(houses)
-    .set(updateData)
-    .where(eq(houses.id, id))
-    .returning({
-      id: houses.id,
-      name: houses.name,
-      address: houses.address,
-    });
+  const [house] = await db.update(houses).set(updateData).where(eq(houses.id, id)).returning({
+    id: houses.id,
+    name: houses.name,
+    address: houses.address,
+  });
 
   if (!house) {
     throw new AppError(404, "HOUSE_NOT_FOUND", "Casa no encontrada");
@@ -93,10 +85,7 @@ export async function updateHouse(
 
 /** Eliminar casa */
 export async function deleteHouse(id: string) {
-  const [deleted] = await db
-    .delete(houses)
-    .where(eq(houses.id, id))
-    .returning({ id: houses.id });
+  const [deleted] = await db.delete(houses).where(eq(houses.id, id)).returning({ id: houses.id });
 
   if (!deleted) {
     throw new AppError(404, "HOUSE_NOT_FOUND", "Casa no encontrada");

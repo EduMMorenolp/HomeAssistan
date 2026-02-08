@@ -75,28 +75,22 @@ export function HouseSelectPage() {
                 "w-full flex items-center gap-3 p-3 rounded-xl border transition-all text-left",
                 selectedId === house.id
                   ? "border-blue-500 bg-blue-500/10"
-                  : "border-white/10 hover:border-white/20 bg-white/5"
+                  : "border-white/10 hover:border-white/20 bg-white/5",
               )}
             >
               <div
                 className={cn(
                   "w-10 h-10 rounded-lg flex items-center justify-center",
-                  selectedId === house.id
-                    ? "bg-blue-500 text-white"
-                    : "bg-white/10 text-slate-400"
+                  selectedId === house.id ? "bg-blue-500 text-white" : "bg-white/10 text-slate-400",
                 )}
               >
                 <Home className="w-5 h-5" />
               </div>
               <div className="flex-1">
                 <p className="text-white font-medium text-sm">{house.name}</p>
-                {house.address && (
-                  <p className="text-slate-500 text-xs">{house.address}</p>
-                )}
+                {house.address && <p className="text-slate-500 text-xs">{house.address}</p>}
               </div>
-              {selectedId === house.id && (
-                <ChevronRight className="w-4 h-4 text-blue-400" />
-              )}
+              {selectedId === house.id && <ChevronRight className="w-4 h-4 text-blue-400" />}
             </button>
           ))}
         </div>
@@ -106,9 +100,7 @@ export function HouseSelectPage() {
       {selectedId && (
         <div className="space-y-4">
           <div>
-            <label className="text-sm text-slate-400 mb-1.5 block">
-              PIN de la Casa
-            </label>
+            <label className="text-sm text-slate-400 mb-1.5 block">PIN de la Casa</label>
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
               <input
@@ -118,9 +110,7 @@ export function HouseSelectPage() {
                 onChange={(e) => setPin(e.target.value)}
                 placeholder="••••"
                 className="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white text-center text-lg tracking-[0.5em] placeholder:tracking-normal placeholder:text-slate-600 focus:outline-none focus:border-blue-500"
-                onKeyDown={(e) =>
-                  e.key === "Enter" && pin.length >= 4 && selectMutation.mutate()
-                }
+                onKeyDown={(e) => e.key === "Enter" && pin.length >= 4 && selectMutation.mutate()}
               />
             </div>
           </div>

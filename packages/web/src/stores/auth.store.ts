@@ -46,8 +46,7 @@ export const useAuthStore = create<AuthState>()(
       isAuthenticated: false,
 
       // Paso 1: Seleccionar casa
-      setHouse: (house, houseToken) =>
-        set({ house, houseToken }),
+      setHouse: (house, houseToken) => set({ house, houseToken }),
 
       // Paso 2: Login completo
       login: (user, accessToken, refreshToken) =>
@@ -59,8 +58,7 @@ export const useAuthStore = create<AuthState>()(
         }),
 
       // Refresh tokens
-      setTokens: (accessToken, refreshToken) =>
-        set({ accessToken, refreshToken }),
+      setTokens: (accessToken, refreshToken) => set({ accessToken, refreshToken }),
 
       // Logout
       logout: () =>
@@ -82,6 +80,6 @@ export const useAuthStore = create<AuthState>()(
         house: state.house,
         isAuthenticated: state.isAuthenticated,
       }),
-    }
-  )
+    },
+  ),
 );

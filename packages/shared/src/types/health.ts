@@ -3,7 +3,13 @@
 // ══════════════════════════════════════════════
 
 export type BloodType = "A+" | "A-" | "B+" | "B-" | "AB+" | "AB-" | "O+" | "O-" | "unknown";
-export type MedicationFrequency = "once" | "daily" | "twice_daily" | "three_daily" | "weekly" | "as_needed";
+export type MedicationFrequency =
+  | "once"
+  | "daily"
+  | "twice_daily"
+  | "three_daily"
+  | "weekly"
+  | "as_needed";
 
 export interface HealthProfileInfo {
   id: string;
@@ -107,8 +113,14 @@ export interface CreateHealthRoutineRequest {
 }
 
 export const BLOOD_TYPE_LABELS: Record<BloodType, string> = {
-  "A+": "A+", "A-": "A-", "B+": "B+", "B-": "B-",
-  "AB+": "AB+", "AB-": "AB-", "O+": "O+", "O-": "O-",
+  "A+": "A+",
+  "A-": "A-",
+  "B+": "B+",
+  "B-": "B-",
+  "AB+": "AB+",
+  "AB-": "AB-",
+  "O+": "O+",
+  "O-": "O-",
   unknown: "Desconocido",
 };
 

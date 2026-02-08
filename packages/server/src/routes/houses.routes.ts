@@ -50,19 +50,15 @@ housesRouter.get("/:id", authenticate, async (req, res, next) => {
 });
 
 /** Crear una nueva casa (solo primera vez o admin) */
-housesRouter.post(
-  "/",
-  validate(createHouseSchema),
-  async (req, res, next) => {
-    try {
-      const house = await housesService.createHouse(req.body);
-      const response: ApiResponse = { success: true, data: house };
-      res.status(201).json(response);
-    } catch (error) {
-      next(error);
-    }
+housesRouter.post("/", validate(createHouseSchema), async (req, res, next) => {
+  try {
+    const house = await housesService.createHouse(req.body);
+    const response: ApiResponse = { success: true, data: house };
+    res.status(201).json(response);
+  } catch (error) {
+    next(error);
   }
-);
+});
 
 /** Actualizar casa */
 housesRouter.patch(
@@ -78,27 +74,22 @@ housesRouter.patch(
     } catch (error) {
       next(error);
     }
-  }
+  },
 );
 
 /** Eliminar casa */
-housesRouter.delete(
-  "/:id",
-  authenticate,
-  authorize("admin"),
-  async (req, res, next) => {
-    try {
-      await housesService.deleteHouse(req.params.id as string);
-      const response: ApiResponse = {
-        success: true,
-        data: { message: "Casa eliminada" },
-      };
-      res.json(response);
-    } catch (error) {
-      next(error);
-    }
+housesRouter.delete("/:id", authenticate, authorize("admin"), async (req, res, next) => {
+  try {
+    await housesService.deleteHouse(req.params.id as string);
+    const response: ApiResponse = {
+      success: true,
+      data: { message: "Casa eliminada" },
+    };
+    res.json(response);
+  } catch (error) {
+    next(error);
   }
-);
+});
 
 /** Obtener miembros de una casa */
 housesRouter.get("/:id/members", authenticate, async (req, res, next) => {

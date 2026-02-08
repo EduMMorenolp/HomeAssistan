@@ -61,10 +61,7 @@ calendarRouter.get("/", async (req, res, next) => {
 
 calendarRouter.get("/:id", async (req, res, next) => {
   try {
-    const data = await calendarService.getEventById(
-      req.params.id,
-      req.user!.houseId,
-    );
+    const data = await calendarService.getEventById(req.params.id, req.user!.houseId);
     const response: ApiResponse = { success: true, data };
     res.json(response);
   } catch (error) {
@@ -72,41 +69,29 @@ calendarRouter.get("/:id", async (req, res, next) => {
   }
 });
 
-calendarRouter.post(
-  "/",
-  validate(createEventSchema),
-  async (req, res, next) => {
-    try {
-      const data = await calendarService.createEvent(
-        req.user!.houseId,
-        req.user!.userId,
-        req.body,
-      );
-      const response: ApiResponse = { success: true, data };
-      res.status(201).json(response);
-    } catch (error) {
-      next(error);
-    }
-  },
-);
+calendarRouter.post("/", validate(createEventSchema), async (req, res, next) => {
+  try {
+    const data = await calendarService.createEvent(req.user!.houseId, req.user!.userId, req.body);
+    const response: ApiResponse = { success: true, data };
+    res.status(201).json(response);
+  } catch (error) {
+    next(error);
+  }
+});
 
-calendarRouter.put(
-  "/:id",
-  validate(updateEventSchema),
-  async (req, res, next) => {
-    try {
-      const data = await calendarService.updateEvent(
-        req.params.id as string,
-        req.user!.houseId,
-        req.body,
-      );
-      const response: ApiResponse = { success: true, data };
-      res.json(response);
-    } catch (error) {
-      next(error);
-    }
-  },
-);
+calendarRouter.put("/:id", validate(updateEventSchema), async (req, res, next) => {
+  try {
+    const data = await calendarService.updateEvent(
+      req.params.id as string,
+      req.user!.houseId,
+      req.body,
+    );
+    const response: ApiResponse = { success: true, data };
+    res.json(response);
+  } catch (error) {
+    next(error);
+  }
+});
 
 calendarRouter.delete("/:id", async (req, res, next) => {
   try {
@@ -118,20 +103,16 @@ calendarRouter.delete("/:id", async (req, res, next) => {
   }
 });
 
-calendarRouter.put(
-  "/:id/respond",
-  validate(respondSchema),
-  async (req, res, next) => {
-    try {
-      await calendarService.respondToEvent(
-        req.params.id as string,
-        req.user!.userId,
-        req.body.status,
-      );
-      const response: ApiResponse = { success: true, data: null };
-      res.json(response);
-    } catch (error) {
-      next(error);
-    }
-  },
-);
+calendarRouter.put("/:id/respond", validate(respondSchema), async (req, res, next) => {
+  try {
+    await calendarService.respondToEvent(
+      req.params.id as string,
+      req.user!.userId,
+      req.body.status,
+    );
+    const response: ApiResponse = { success: true, data: null };
+    res.json(response);
+  } catch (error) {
+    next(error);
+  }
+});

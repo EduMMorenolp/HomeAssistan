@@ -37,16 +37,11 @@ export const expenses = pgTable("expenses", {
   description: varchar("description", { length: 200 }).notNull(),
   amount: numeric("amount", { precision: 10, scale: 2 }).notNull(),
   category: expenseCategoryEnum("category").default("other").notNull(),
-  paidBy: uuid("paid_by")
-    .references(() => users.id, { onDelete: "set null" }),
+  paidBy: uuid("paid_by").references(() => users.id, { onDelete: "set null" }),
   receiptUrl: text("receipt_url"),
   note: text("note"),
-  expenseDate: timestamp("expense_date", { withTimezone: true })
-    .defaultNow()
-    .notNull(),
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .defaultNow()
-    .notNull(),
+  expenseDate: timestamp("expense_date", { withTimezone: true }).defaultNow().notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
 export type Expense = typeof expenses.$inferSelect;
@@ -64,13 +59,9 @@ export const shoppingItems = pgTable("shopping_items", {
   category: varchar("shopping_category", { length: 50 }),
   estimatedPrice: numeric("estimated_price", { precision: 10, scale: 2 }),
   isPurchased: boolean("is_purchased").default(false).notNull(),
-  addedBy: uuid("added_by")
-    .references(() => users.id, { onDelete: "set null" }),
-  purchasedBy: uuid("purchased_by")
-    .references(() => users.id, { onDelete: "set null" }),
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .defaultNow()
-    .notNull(),
+  addedBy: uuid("added_by").references(() => users.id, { onDelete: "set null" }),
+  purchasedBy: uuid("purchased_by").references(() => users.id, { onDelete: "set null" }),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   purchasedAt: timestamp("purchased_at", { withTimezone: true }),
 });
 
@@ -91,12 +82,8 @@ export const householdItems = pgTable("household_items", {
   unit: varchar("unit", { length: 20 }),
   isLow: boolean("is_low").default(false).notNull(),
   lastRestocked: timestamp("last_restocked", { withTimezone: true }),
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .defaultNow()
-    .notNull(),
-  updatedAt: timestamp("updated_at", { withTimezone: true })
-    .defaultNow()
-    .notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
 export type HouseholdItem = typeof householdItems.$inferSelect;

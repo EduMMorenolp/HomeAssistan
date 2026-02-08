@@ -16,12 +16,7 @@ import {
 import { houses } from "./houses";
 import { users } from "./users";
 
-export const taskPriorityEnum = pgEnum("task_priority", [
-  "low",
-  "medium",
-  "high",
-  "urgent",
-]);
+export const taskPriorityEnum = pgEnum("task_priority", ["low", "medium", "high", "urgent"]);
 
 export const taskStatusEnum = pgEnum("task_status", [
   "pending",
@@ -52,14 +47,9 @@ export const tasks = pgTable("tasks", {
   dueDate: date("due_date"),
   recurrence: taskRecurrenceEnum("recurrence").default("none").notNull(),
   points: integer("points").default(10).notNull(),
-  createdBy: uuid("created_by")
-    .references(() => users.id, { onDelete: "set null" }),
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .defaultNow()
-    .notNull(),
-  updatedAt: timestamp("updated_at", { withTimezone: true })
-    .defaultNow()
-    .notNull(),
+  createdBy: uuid("created_by").references(() => users.id, { onDelete: "set null" }),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
 export type Task = typeof tasks.$inferSelect;
@@ -74,9 +64,7 @@ export const taskAssignments = pgTable("task_assignments", {
   userId: uuid("user_id")
     .references(() => users.id, { onDelete: "cascade" })
     .notNull(),
-  assignedAt: timestamp("assigned_at", { withTimezone: true })
-    .defaultNow()
-    .notNull(),
+  assignedAt: timestamp("assigned_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
 export type TaskAssignment = typeof taskAssignments.$inferSelect;
@@ -88,13 +76,10 @@ export const taskCompletions = pgTable("task_completions", {
   taskId: uuid("task_id")
     .references(() => tasks.id, { onDelete: "cascade" })
     .notNull(),
-  completedBy: uuid("completed_by")
-    .references(() => users.id, { onDelete: "set null" }),
+  completedBy: uuid("completed_by").references(() => users.id, { onDelete: "set null" }),
   pointsEarned: integer("points_earned").default(0).notNull(),
   note: text("note"),
-  completedAt: timestamp("completed_at", { withTimezone: true })
-    .defaultNow()
-    .notNull(),
+  completedAt: timestamp("completed_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
 export type TaskCompletion = typeof taskCompletions.$inferSelect;
@@ -109,9 +94,7 @@ export const taskRotations = pgTable("task_rotations", {
   memberIds: text("member_ids").notNull(), // JSON array de user IDs
   currentIndex: integer("current_index").default(0).notNull(),
   isActive: boolean("is_active").default(true).notNull(),
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .defaultNow()
-    .notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
 export type TaskRotation = typeof taskRotations.$inferSelect;
@@ -130,9 +113,7 @@ export const userPoints = pgTable("user_points", {
   weeklyPoints: integer("weekly_points").default(0).notNull(),
   monthlyPoints: integer("monthly_points").default(0).notNull(),
   tasksCompleted: integer("tasks_completed").default(0).notNull(),
-  updatedAt: timestamp("updated_at", { withTimezone: true })
-    .defaultNow()
-    .notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
 export type UserPoints = typeof userPoints.$inferSelect;

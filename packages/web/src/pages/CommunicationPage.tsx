@@ -42,9 +42,7 @@ export function CommunicationPage() {
 
   return (
     <div className="space-y-4 sm:space-y-6">
-      <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">
-        Comunicación
-      </h1>
+      <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">Comunicación</h1>
 
       {/* Tabs */}
       <div className="flex gap-1 bg-slate-100 dark:bg-slate-800 rounded-lg p-1 overflow-x-auto">
@@ -56,7 +54,7 @@ export function CommunicationPage() {
               "flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap",
               tab === t.key
                 ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm"
-                : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+                : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300",
             )}
           >
             <t.icon className="w-4 h-4" />
@@ -87,7 +85,9 @@ function AnnouncementsSection() {
   const { data: announcements = [] } = useQuery<AnnouncementInfo[]>({
     queryKey: ["announcements"],
     queryFn: async () => {
-      const { data } = await api.get<ApiResponse<AnnouncementInfo[]>>("/communication/announcements");
+      const { data } = await api.get<ApiResponse<AnnouncementInfo[]>>(
+        "/communication/announcements",
+      );
       return data.data!;
     },
   });
@@ -178,7 +178,7 @@ function AnnouncementsSection() {
             key={a.id}
             className={cn(
               "bg-white dark:bg-slate-800 rounded-xl p-4 border",
-              priorityColors[a.priority]
+              priorityColors[a.priority],
             )}
           >
             <div className="flex items-start justify-between gap-2">
@@ -192,7 +192,7 @@ function AnnouncementsSection() {
                         "text-xs px-2 py-0.5 rounded-full font-medium",
                         a.priority === "urgent"
                           ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
-                          : "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
+                          : "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400",
                       )}
                     >
                       {a.priority === "urgent" ? "Urgente" : "Importante"}
@@ -261,7 +261,10 @@ function ChatSection() {
               {m.content}
             </p>
             <p className="text-[10px] text-slate-400">
-              {new Date(m.createdAt).toLocaleTimeString("es", { hour: "2-digit", minute: "2-digit" })}
+              {new Date(m.createdAt).toLocaleTimeString("es", {
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
             </p>
           </div>
         ))}
@@ -305,7 +308,9 @@ function NotificationsSection() {
   const { data: notifications = [] } = useQuery<NotificationInfo[]>({
     queryKey: ["notifications"],
     queryFn: async () => {
-      const { data } = await api.get<ApiResponse<NotificationInfo[]>>("/communication/notifications");
+      const { data } = await api.get<ApiResponse<NotificationInfo[]>>(
+        "/communication/notifications",
+      );
       return data.data!;
     },
   });
@@ -359,15 +364,13 @@ function NotificationsSection() {
               "bg-white dark:bg-slate-800 rounded-xl p-3 border flex items-start gap-3",
               n.isRead
                 ? "border-slate-200 dark:border-slate-700 opacity-60"
-                : "border-blue-200 dark:border-blue-800"
+                : "border-blue-200 dark:border-blue-800",
             )}
           >
             <span className="text-lg">{typeIcons[n.type] ?? "📌"}</span>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-slate-900 dark:text-white">{n.title}</p>
-              {n.body && (
-                <p className="text-xs text-slate-500 mt-0.5">{n.body}</p>
-              )}
+              {n.body && <p className="text-xs text-slate-500 mt-0.5">{n.body}</p>}
               <p className="text-[10px] text-slate-400 mt-1">
                 {new Date(n.createdAt).toLocaleString("es")}
               </p>
@@ -434,9 +437,7 @@ function PanicSection() {
       {/* Botón de pánico */}
       <div className="bg-red-50 dark:bg-red-900/20 rounded-xl p-6 border border-red-200 dark:border-red-800 text-center space-y-3">
         <AlertTriangle className="w-12 h-12 text-red-500 mx-auto" />
-        <h2 className="text-lg font-bold text-red-700 dark:text-red-400">
-          Botón de Pánico
-        </h2>
+        <h2 className="text-lg font-bold text-red-700 dark:text-red-400">Botón de Pánico</h2>
         <p className="text-sm text-red-600/80 dark:text-red-400/80">
           Envía una alerta a todos los miembros del hogar
         </p>
@@ -464,7 +465,7 @@ function PanicSection() {
               "bg-white dark:bg-slate-800 rounded-xl p-3 border flex items-center gap-3",
               p.isResolved
                 ? "border-slate-200 dark:border-slate-700"
-                : "border-red-300 dark:border-red-800 bg-red-50/50 dark:bg-red-900/10"
+                : "border-red-300 dark:border-red-800 bg-red-50/50 dark:bg-red-900/10",
             )}
           >
             <span className="text-lg">{p.isResolved ? "✅" : "🚨"}</span>
@@ -472,9 +473,7 @@ function PanicSection() {
               <p className="text-sm font-medium text-slate-900 dark:text-white">
                 {p.triggeredByName}
               </p>
-              {p.message && (
-                <p className="text-xs text-slate-500">{p.message}</p>
-              )}
+              {p.message && <p className="text-xs text-slate-500">{p.message}</p>}
               <p className="text-[10px] text-slate-400">
                 {new Date(p.createdAt).toLocaleString("es")}
               </p>

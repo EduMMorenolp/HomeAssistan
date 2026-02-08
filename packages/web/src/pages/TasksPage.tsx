@@ -72,9 +72,7 @@ export function TasksPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-0 sm:justify-between">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">
-            Tareas
-          </h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">Tareas</h1>
           <p className="text-sm text-slate-500 dark:text-slate-400">
             Gestiona las tareas del hogar
           </p>
@@ -90,10 +88,12 @@ export function TasksPage() {
 
       {/* Tabs */}
       <div className="flex gap-1 bg-slate-100 dark:bg-slate-800 rounded-lg p-1 w-fit">
-        {([
-          { key: "tasks", label: "Tareas", icon: CheckCircle2 },
-          { key: "rankings", label: "Ranking", icon: Trophy },
-        ] as const).map((t) => (
+        {(
+          [
+            { key: "tasks", label: "Tareas", icon: CheckCircle2 },
+            { key: "rankings", label: "Ranking", icon: Trophy },
+          ] as const
+        ).map((t) => (
           <button
             key={t.key}
             onClick={() => setTab(t.key)}
@@ -101,7 +101,7 @@ export function TasksPage() {
               "flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors",
               tab === t.key
                 ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm"
-                : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+                : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300",
             )}
           >
             <t.icon className="w-4 h-4" />
@@ -170,11 +170,11 @@ function TaskList({
           className="text-sm border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1.5 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300"
         >
           <option value="all">Todos los estados</option>
-          {(Object.entries(TASK_STATUS_LABELS) as [TaskStatus, string][]).map(
-            ([k, v]) => (
-              <option key={k} value={k}>{v}</option>
-            )
-          )}
+          {(Object.entries(TASK_STATUS_LABELS) as [TaskStatus, string][]).map(([k, v]) => (
+            <option key={k} value={k}>
+              {v}
+            </option>
+          ))}
         </select>
         <select
           value={filterPriority}
@@ -182,11 +182,11 @@ function TaskList({
           className="text-sm border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1.5 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300"
         >
           <option value="all">Todas las prioridades</option>
-          {(Object.entries(TASK_PRIORITY_LABELS) as [TaskPriority, string][]).map(
-            ([k, v]) => (
-              <option key={k} value={k}>{v}</option>
-            )
-          )}
+          {(Object.entries(TASK_PRIORITY_LABELS) as [TaskPriority, string][]).map(([k, v]) => (
+            <option key={k} value={k}>
+              {v}
+            </option>
+          ))}
         </select>
       </div>
 
@@ -216,9 +216,7 @@ function TaskList({
           )}
 
           {/* Completadas */}
-          {completed.length > 0 && (
-            <CompletedSection tasks={completed} />
-          )}
+          {completed.length > 0 && <CompletedSection tasks={completed} />}
         </>
       )}
     </div>
@@ -291,7 +289,7 @@ function TaskCard({ task }: { task: TaskInfo }) {
     <div
       className={cn(
         "bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-3 sm:p-4 transition-all",
-        isCompleted && "opacity-60"
+        isCompleted && "opacity-60",
       )}
     >
       <div className="flex items-start gap-3">
@@ -303,7 +301,7 @@ function TaskCard({ task }: { task: TaskInfo }) {
             "mt-0.5 shrink-0 transition-colors",
             isCompleted
               ? "text-green-500"
-              : "text-slate-300 hover:text-green-400 dark:text-slate-600 dark:hover:text-green-400"
+              : "text-slate-300 hover:text-green-400 dark:text-slate-600 dark:hover:text-green-400",
           )}
         >
           {completeMutation.isPending ? (
@@ -319,7 +317,7 @@ function TaskCard({ task }: { task: TaskInfo }) {
             <h4
               className={cn(
                 "font-medium text-slate-900 dark:text-white text-sm sm:text-base",
-                isCompleted && "line-through"
+                isCompleted && "line-through",
               )}
             >
               {task.title}
@@ -327,7 +325,7 @@ function TaskCard({ task }: { task: TaskInfo }) {
             <span
               className={cn(
                 "text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 rounded-full font-medium",
-                PRIORITY_STYLES[task.priority]
+                PRIORITY_STYLES[task.priority],
               )}
             >
               {TASK_PRIORITY_LABELS[task.priority]}
@@ -362,7 +360,7 @@ function TaskCard({ task }: { task: TaskInfo }) {
               <span
                 className={cn(
                   "flex items-center gap-1",
-                  isOverdue && "text-red-500 dark:text-red-400 font-medium"
+                  isOverdue && "text-red-500 dark:text-red-400 font-medium",
                 )}
               >
                 <Clock className="w-3 h-3" />
@@ -446,19 +444,16 @@ function Rankings() {
           key={r.userId}
           className={cn(
             "flex items-center gap-3 sm:gap-4 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-3 sm:p-4",
-            i === 0 && "ring-2 ring-yellow-400/30"
+            i === 0 && "ring-2 ring-yellow-400/30",
           )}
         >
           <span className="text-xl sm:text-2xl font-bold w-8 text-center shrink-0">
             {medals[i] || `#${i + 1}`}
           </span>
           <div className="flex-1 min-w-0">
-            <p className="font-semibold text-slate-900 dark:text-white truncate">
-              {r.userName}
-            </p>
+            <p className="font-semibold text-slate-900 dark:text-white truncate">{r.userName}</p>
             <p className="text-xs text-slate-400">
-              {r.tasksCompleted} tareas · Semanal: {r.weeklyPoints} · Mensual:{" "}
-              {r.monthlyPoints}
+              {r.tasksCompleted} tareas · Semanal: {r.weeklyPoints} · Mensual: {r.monthlyPoints}
             </p>
           </div>
           <div className="flex items-center gap-1 text-yellow-500 font-bold text-lg">
@@ -511,47 +506,84 @@ function EditTaskModal({ task, onClose }: { task: TaskInfo; onClose: () => void 
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
       <div className="relative bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-700">
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
-            Editar tarea
-          </h2>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Editar tarea</h2>
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+          >
             <X className="w-5 h-5 text-slate-500" />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="p-4 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Título *</label>
-            <input type="text" value={form.title ?? ""} onChange={(e) => setForm({ ...form, title: e.target.value })}
-              className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-transparent" autoFocus />
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+              Título *
+            </label>
+            <input
+              type="text"
+              value={form.title ?? ""}
+              onChange={(e) => setForm({ ...form, title: e.target.value })}
+              className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              autoFocus
+            />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Descripción</label>
-            <textarea value={form.description ?? ""} onChange={(e) => setForm({ ...form, description: e.target.value })}
-              className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-transparent" rows={2} />
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+              Descripción
+            </label>
+            <textarea
+              value={form.description ?? ""}
+              onChange={(e) => setForm({ ...form, description: e.target.value })}
+              className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              rows={2}
+            />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Prioridad</label>
-              <select value={form.priority ?? "medium"} onChange={(e) => setForm({ ...form, priority: e.target.value as TaskPriority })}
-                className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-green-500">
-                {(Object.entries(TASK_PRIORITY_LABELS) as [TaskPriority, string][]).map(([k, v]) => (
-                  <option key={k} value={k}>{v}</option>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                Prioridad
+              </label>
+              <select
+                value={form.priority ?? "medium"}
+                onChange={(e) => setForm({ ...form, priority: e.target.value as TaskPriority })}
+                className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-green-500"
+              >
+                {(Object.entries(TASK_PRIORITY_LABELS) as [TaskPriority, string][]).map(
+                  ([k, v]) => (
+                    <option key={k} value={k}>
+                      {v}
+                    </option>
+                  ),
+                )}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                Categoría
+              </label>
+              <select
+                value={form.category ?? ""}
+                onChange={(e) => setForm({ ...form, category: e.target.value })}
+                className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-green-500"
+              >
+                <option value="">Sin categoría</option>
+                {TASK_CATEGORY_DEFAULTS.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
                 ))}
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Categoría</label>
-              <select value={form.category ?? ""} onChange={(e) => setForm({ ...form, category: e.target.value })}
-                className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-green-500">
-                <option value="">Sin categoría</option>
-                {TASK_CATEGORY_DEFAULTS.map((c) => <option key={c} value={c}>{c}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Recurrencia</label>
-              <select value={form.recurrence ?? "none"} onChange={(e) => setForm({ ...form, recurrence: e.target.value as any })}
-                className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-green-500">
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                Recurrencia
+              </label>
+              <select
+                value={form.recurrence ?? "none"}
+                onChange={(e) => setForm({ ...form, recurrence: e.target.value as any })}
+                className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-green-500"
+              >
                 <option value="none">Sin repetir</option>
                 <option value="daily">Diaria</option>
                 <option value="weekly">Semanal</option>
@@ -560,20 +592,40 @@ function EditTaskModal({ task, onClose }: { task: TaskInfo; onClose: () => void 
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Puntos</label>
-              <input type="number" min={0} max={1000} value={form.points ?? 10}
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                Puntos
+              </label>
+              <input
+                type="number"
+                min={0}
+                max={1000}
+                value={form.points ?? 10}
                 onChange={(e) => setForm({ ...form, points: parseInt(e.target.value) || 0 })}
-                className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-green-500" />
+                className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-green-500"
+              />
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Fecha límite</label>
-            <input type="date" value={form.dueDate ?? ""} onChange={(e) => setForm({ ...form, dueDate: e.target.value || undefined })}
-              className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-green-500" />
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+              Fecha límite
+            </label>
+            <input
+              type="date"
+              value={form.dueDate ?? ""}
+              onChange={(e) => setForm({ ...form, dueDate: e.target.value || undefined })}
+              className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-green-500"
+            />
           </div>
-          <button type="submit" disabled={mutation.isPending || !form.title?.trim()}
-            className="w-full py-2.5 bg-blue-500 hover:bg-blue-600 disabled:opacity-50 text-white rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2">
-            {mutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Pencil className="w-4 h-4" />}
+          <button
+            type="submit"
+            disabled={mutation.isPending || !form.title?.trim()}
+            className="w-full py-2.5 bg-blue-500 hover:bg-blue-600 disabled:opacity-50 text-white rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
+          >
+            {mutation.isPending ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Pencil className="w-4 h-4" />
+            )}
             Guardar cambios
           </button>
         </form>
@@ -620,9 +672,7 @@ function CreateTaskModal({ onClose }: { onClose: () => void }) {
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
       <div className="relative bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-700">
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
-            Nueva tarea
-          </h2>
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Nueva tarea</h2>
           <button
             onClick={onClose}
             className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
@@ -670,15 +720,15 @@ function CreateTaskModal({ onClose }: { onClose: () => void }) {
               </label>
               <select
                 value={form.priority}
-                onChange={(e) =>
-                  setForm({ ...form, priority: e.target.value as TaskPriority })
-                }
+                onChange={(e) => setForm({ ...form, priority: e.target.value as TaskPriority })}
                 className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-green-500"
               >
                 {(Object.entries(TASK_PRIORITY_LABELS) as [TaskPriority, string][]).map(
                   ([k, v]) => (
-                    <option key={k} value={k}>{v}</option>
-                  )
+                    <option key={k} value={k}>
+                      {v}
+                    </option>
+                  ),
                 )}
               </select>
             </div>
@@ -695,7 +745,9 @@ function CreateTaskModal({ onClose }: { onClose: () => void }) {
               >
                 <option value="">Sin categoría</option>
                 {TASK_CATEGORY_DEFAULTS.map((c) => (
-                  <option key={c} value={c}>{c}</option>
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
                 ))}
               </select>
             </div>
@@ -707,9 +759,7 @@ function CreateTaskModal({ onClose }: { onClose: () => void }) {
               </label>
               <select
                 value={form.recurrence}
-                onChange={(e) =>
-                  setForm({ ...form, recurrence: e.target.value as any })
-                }
+                onChange={(e) => setForm({ ...form, recurrence: e.target.value as any })}
                 className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-green-500"
               >
                 <option value="none">Sin repetir</option>
@@ -730,9 +780,7 @@ function CreateTaskModal({ onClose }: { onClose: () => void }) {
                 min={0}
                 max={1000}
                 value={form.points ?? 10}
-                onChange={(e) =>
-                  setForm({ ...form, points: parseInt(e.target.value) || 0 })
-                }
+                onChange={(e) => setForm({ ...form, points: parseInt(e.target.value) || 0 })}
                 className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-green-500"
               />
             </div>

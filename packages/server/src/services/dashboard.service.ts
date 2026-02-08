@@ -33,12 +33,7 @@ export async function getDashboardStats(houseId: string) {
   const [todayEventsR] = await db
     .select({ count: count() })
     .from(events)
-    .where(
-      and(
-        eq(events.houseId, houseId),
-        gte(events.startDate, startOfDay),
-      )
-    );
+    .where(and(eq(events.houseId, houseId), gte(events.startDate, startOfDay)));
 
   const [membersR] = await db
     .select({ count: count() })
@@ -48,12 +43,7 @@ export async function getDashboardStats(houseId: string) {
   const [monthExpR] = await db
     .select({ total: sql<string>`COALESCE(SUM(${expenses.amount}), 0)` })
     .from(expenses)
-    .where(
-      and(
-        eq(expenses.houseId, houseId),
-        gte(expenses.expenseDate, startOfMonth),
-      )
-    );
+    .where(and(eq(expenses.houseId, houseId), gte(expenses.expenseDate, startOfMonth)));
 
   const [lowStockR] = await db
     .select({ count: count() })
@@ -63,7 +53,7 @@ export async function getDashboardStats(houseId: string) {
         eq(medications.houseId, houseId),
         eq(medications.isActive, true),
         sql`${medications.stock} <= ${medications.minStock}`,
-      )
+      ),
     );
 
   return {
@@ -82,18 +72,10 @@ export async function getPreferences(userId: string, houseId: string) {
   const [existing] = await db
     .select()
     .from(userPreferences)
-    .where(
-      and(
-        eq(userPreferences.userId, userId),
-        eq(userPreferences.houseId, houseId),
-      )
-    );
+    .where(and(eq(userPreferences.userId, userId), eq(userPreferences.houseId, houseId)));
   if (existing) return existing;
 
-  const [created] = await db
-    .insert(userPreferences)
-    .values({ userId, houseId })
-    .returning();
+  const [created] = await db.insert(userPreferences).values({ userId, houseId }).returning();
   return created;
 }
 

@@ -2,7 +2,14 @@
 // Tipos de Calendario
 // ══════════════════════════════════════════════
 
-export type EventType = "general" | "birthday" | "appointment" | "reminder" | "holiday" | "maintenance" | "other";
+export type EventType =
+  | "general"
+  | "birthday"
+  | "appointment"
+  | "reminder"
+  | "holiday"
+  | "maintenance"
+  | "other";
 export type EventRecurrence = "none" | "daily" | "weekly" | "monthly" | "yearly";
 export type EventAttendeeStatus = "pending" | "accepted" | "declined";
 

@@ -112,23 +112,19 @@ communicationRouter.get("/messages", async (req, res, next) => {
   }
 });
 
-communicationRouter.post(
-  "/messages",
-  validate(sendMessageSchema),
-  async (req, res, next) => {
-    try {
-      const data = await commService.createMessage(
-        req.user!.houseId,
-        req.user!.userId,
-        req.body.content,
-      );
-      const response: ApiResponse = { success: true, data };
-      res.status(201).json(response);
-    } catch (error) {
-      next(error);
-    }
-  },
-);
+communicationRouter.post("/messages", validate(sendMessageSchema), async (req, res, next) => {
+  try {
+    const data = await commService.createMessage(
+      req.user!.houseId,
+      req.user!.userId,
+      req.body.content,
+    );
+    const response: ApiResponse = { success: true, data };
+    res.status(201).json(response);
+  } catch (error) {
+    next(error);
+  }
+});
 
 // ══════════════════════════════════════════════
 // NOTIFICACIONES
@@ -136,10 +132,7 @@ communicationRouter.post(
 
 communicationRouter.get("/notifications", async (req, res, next) => {
   try {
-    const data = await commService.getNotifications(
-      req.user!.houseId,
-      req.user!.userId,
-    );
+    const data = await commService.getNotifications(req.user!.houseId, req.user!.userId);
     const response: ApiResponse = { success: true, data };
     res.json(response);
   } catch (error) {
@@ -149,10 +142,7 @@ communicationRouter.get("/notifications", async (req, res, next) => {
 
 communicationRouter.get("/notifications/unread-count", async (req, res, next) => {
   try {
-    const count = await commService.getUnreadCount(
-      req.user!.houseId,
-      req.user!.userId,
-    );
+    const count = await commService.getUnreadCount(req.user!.houseId, req.user!.userId);
     const response: ApiResponse = { success: true, data: { count } };
     res.json(response);
   } catch (error) {
@@ -172,10 +162,7 @@ communicationRouter.put("/notifications/:id/read", async (req, res, next) => {
 
 communicationRouter.put("/notifications/read-all", async (req, res, next) => {
   try {
-    await commService.markAllNotificationsRead(
-      req.user!.houseId,
-      req.user!.userId,
-    );
+    await commService.markAllNotificationsRead(req.user!.houseId, req.user!.userId);
     const response: ApiResponse = { success: true, data: null };
     res.json(response);
   } catch (error) {
@@ -213,10 +200,7 @@ communicationRouter.post("/panic", async (req, res, next) => {
 
 communicationRouter.put("/panic/:id/resolve", async (req, res, next) => {
   try {
-    const data = await commService.resolvePanic(
-      req.params.id,
-      req.user!.userId,
-    );
+    const data = await commService.resolvePanic(req.params.id, req.user!.userId);
     const response: ApiResponse = { success: true, data };
     res.json(response);
   } catch (error) {

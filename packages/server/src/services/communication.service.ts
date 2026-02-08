@@ -11,10 +11,7 @@ import {
   panicPings,
   users,
 } from "@homeassistan/database";
-import type {
-  CreateAnnouncementRequest,
-  UpdateAnnouncementRequest,
-} from "@homeassistan/shared";
+import type { CreateAnnouncementRequest, UpdateAnnouncementRequest } from "@homeassistan/shared";
 import { AppError } from "../middleware/error-handler";
 
 // ══════════════════════════════════════════════
@@ -108,15 +105,8 @@ export async function getMessages(houseId: string, limit = 100) {
     .limit(limit);
 }
 
-export async function createMessage(
-  houseId: string,
-  senderId: string,
-  content: string,
-) {
-  const [row] = await db
-    .insert(messages)
-    .values({ houseId, senderId, content })
-    .returning();
+export async function createMessage(houseId: string, senderId: string, content: string) {
+  const [row] = await db.insert(messages).values({ houseId, senderId, content }).returning();
   return row;
 }
 
@@ -136,12 +126,7 @@ export async function getNotifications(houseId: string, userId: string) {
       createdAt: notifications.createdAt,
     })
     .from(notifications)
-    .where(
-      and(
-        eq(notifications.houseId, houseId),
-        eq(notifications.userId, userId),
-      )
-    )
+    .where(and(eq(notifications.houseId, houseId), eq(notifications.userId, userId)))
     .orderBy(desc(notifications.createdAt))
     .limit(50);
 }
@@ -155,7 +140,7 @@ export async function getUnreadCount(houseId: string, userId: string) {
         eq(notifications.houseId, houseId),
         eq(notifications.userId, userId),
         eq(notifications.isRead, false),
-      )
+      ),
     );
   return result?.count ?? 0;
 }
@@ -171,12 +156,7 @@ export async function markAllNotificationsRead(houseId: string, userId: string) 
   await db
     .update(notifications)
     .set({ isRead: true })
-    .where(
-      and(
-        eq(notifications.houseId, houseId),
-        eq(notifications.userId, userId),
-      )
-    );
+    .where(and(eq(notifications.houseId, houseId), eq(notifications.userId, userId)));
 }
 
 export async function createNotification(
@@ -217,15 +197,8 @@ export async function getPanicPings(houseId: string) {
     .limit(20);
 }
 
-export async function triggerPanic(
-  houseId: string,
-  triggeredBy: string,
-  message?: string,
-) {
-  const [row] = await db
-    .insert(panicPings)
-    .values({ houseId, triggeredBy, message })
-    .returning();
+export async function triggerPanic(houseId: string, triggeredBy: string, message?: string) {
+  const [row] = await db.insert(panicPings).values({ houseId, triggeredBy, message }).returning();
   return row;
 }
 

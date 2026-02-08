@@ -3,13 +3,7 @@
 // ══════════════════════════════════════════════
 
 import { eq, and, desc, gte, sql } from "drizzle-orm";
-import {
-  db,
-  expenses,
-  shoppingItems,
-  householdItems,
-  users,
-} from "@homeassistan/database";
+import { db, expenses, shoppingItems, householdItems, users } from "@homeassistan/database";
 import type {
   CreateExpenseRequest,
   UpdateExpenseRequest,
@@ -56,12 +50,7 @@ export async function getExpenseSummary(houseId: string) {
       total: sql<string>`COALESCE(SUM(${expenses.amount}::numeric), 0)`,
     })
     .from(expenses)
-    .where(
-      and(
-        eq(expenses.houseId, houseId),
-        gte(expenses.expenseDate, startOfMonth)
-      )
-    );
+    .where(and(eq(expenses.houseId, houseId), gte(expenses.expenseDate, startOfMonth)));
 
   // Total de la semana
   const [weekResult] = await db
@@ -69,12 +58,7 @@ export async function getExpenseSummary(houseId: string) {
       total: sql<string>`COALESCE(SUM(${expenses.amount}::numeric), 0)`,
     })
     .from(expenses)
-    .where(
-      and(
-        eq(expenses.houseId, houseId),
-        gte(expenses.expenseDate, startOfWeek)
-      )
-    );
+    .where(and(eq(expenses.houseId, houseId), gte(expenses.expenseDate, startOfWeek)));
 
   // Por categoría (mes actual)
   const byCategory = await db
@@ -83,12 +67,7 @@ export async function getExpenseSummary(houseId: string) {
       total: sql<string>`SUM(${expenses.amount}::numeric)`,
     })
     .from(expenses)
-    .where(
-      and(
-        eq(expenses.houseId, houseId),
-        gte(expenses.expenseDate, startOfMonth)
-      )
-    )
+    .where(and(eq(expenses.houseId, houseId), gte(expenses.expenseDate, startOfMonth)))
     .groupBy(expenses.category)
     .orderBy(desc(sql`SUM(${expenses.amount}::numeric)`));
 
@@ -121,11 +100,7 @@ export async function getExpenseSummary(houseId: string) {
   };
 }
 
-export async function createExpense(
-  houseId: string,
-  userId: string,
-  data: CreateExpenseRequest
-) {
+export async function createExpense(houseId: string, userId: string, data: CreateExpenseRequest) {
   const [expense] = await db
     .insert(expenses)
     .values({
@@ -143,10 +118,7 @@ export async function createExpense(
   return expense;
 }
 
-export async function updateExpense(
-  expenseId: string,
-  data: UpdateExpenseRequest
-) {
+export async function updateExpense(expenseId: string, data: UpdateExpenseRequest) {
   const updateData: Record<string, unknown> = {};
 
   if (data.description !== undefined) updateData.description = data.description;
@@ -205,7 +177,7 @@ export async function getShoppingList(houseId: string) {
 export async function addShoppingItem(
   houseId: string,
   userId: string,
-  data: CreateShoppingItemRequest
+  data: CreateShoppingItemRequest,
 ) {
   const [item] = await db
     .insert(shoppingItems)
@@ -215,9 +187,7 @@ export async function addShoppingItem(
       quantity: data.quantity ?? 1,
       unit: data.unit,
       category: data.category,
-      estimatedPrice: data.estimatedPrice
-        ? String(data.estimatedPrice)
-        : undefined,
+      estimatedPrice: data.estimatedPrice ? String(data.estimatedPrice) : undefined,
       addedBy: userId,
     })
     .returning();
@@ -226,11 +196,7 @@ export async function addShoppingItem(
 }
 
 export async function toggleShoppingItem(itemId: string, userId: string) {
-  const [item] = await db
-    .select()
-    .from(shoppingItems)
-    .where(eq(shoppingItems.id, itemId))
-    .limit(1);
+  const [item] = await db.select().from(shoppingItems).where(eq(shoppingItems.id, itemId)).limit(1);
 
   if (!item) {
     throw new AppError(404, "ITEM_NOT_FOUND", "Artículo no encontrado");
@@ -263,12 +229,7 @@ export async function deleteShoppingItem(itemId: string) {
 export async function clearPurchasedItems(houseId: string) {
   return db
     .delete(shoppingItems)
-    .where(
-      and(
-        eq(shoppingItems.houseId, houseId),
-        eq(shoppingItems.isPurchased, true)
-      )
-    );
+    .where(and(eq(shoppingItems.houseId, houseId), eq(shoppingItems.isPurchased, true)));
 }
 
 // ══════════════════════════════════════════════
@@ -283,10 +244,7 @@ export async function getInventory(houseId: string) {
     .orderBy(householdItems.name);
 }
 
-export async function createInventoryItem(
-  houseId: string,
-  data: CreateHouseholdItemRequest
-) {
+export async function createInventoryItem(houseId: string, data: CreateHouseholdItemRequest) {
   const quantity = data.quantity ?? 1;
   const minQuantity = data.minQuantity ?? 0;
 
@@ -307,10 +265,7 @@ export async function createInventoryItem(
   return item;
 }
 
-export async function updateInventoryItem(
-  itemId: string,
-  data: UpdateHouseholdItemRequest
-) {
+export async function updateInventoryItem(itemId: string, data: UpdateHouseholdItemRequest) {
   const updateData: Record<string, unknown> = { updatedAt: new Date() };
 
   if (data.name !== undefined) updateData.name = data.name;

@@ -22,9 +22,7 @@ const createTaskSchema = z.object({
   priority: z.enum(["low", "medium", "high", "urgent"]).optional(),
   category: z.string().max(50).optional(),
   dueDate: z.string().optional(),
-  recurrence: z
-    .enum(["none", "daily", "weekly", "biweekly", "monthly"])
-    .optional(),
+  recurrence: z.enum(["none", "daily", "weekly", "biweekly", "monthly"]).optional(),
   points: z.number().int().min(0).max(1000).optional(),
   assigneeIds: z.array(z.string().uuid()).optional(),
 });
@@ -33,14 +31,10 @@ const updateTaskSchema = z.object({
   title: z.string().min(1).max(200).optional(),
   description: z.string().optional(),
   priority: z.enum(["low", "medium", "high", "urgent"]).optional(),
-  status: z
-    .enum(["pending", "in_progress", "completed", "cancelled"])
-    .optional(),
+  status: z.enum(["pending", "in_progress", "completed", "cancelled"]).optional(),
   category: z.string().max(50).optional(),
   dueDate: z.string().optional(),
-  recurrence: z
-    .enum(["none", "daily", "weekly", "biweekly", "monthly"])
-    .optional(),
+  recurrence: z.enum(["none", "daily", "weekly", "biweekly", "monthly"]).optional(),
   points: z.number().int().min(0).max(1000).optional(),
 });
 
@@ -85,11 +79,7 @@ tasksRouter.get("/:id", async (req, res, next) => {
 /** Crear tarea */
 tasksRouter.post("/", validate(createTaskSchema), async (req, res, next) => {
   try {
-    const data = await tasksService.createTask(
-      req.user!.houseId,
-      req.user!.userId,
-      req.body
-    );
+    const data = await tasksService.createTask(req.user!.houseId, req.user!.userId, req.body);
     const response: ApiResponse = { success: true, data };
     res.status(201).json(response);
   } catch (error) {
@@ -98,77 +88,55 @@ tasksRouter.post("/", validate(createTaskSchema), async (req, res, next) => {
 });
 
 /** Actualizar tarea */
-tasksRouter.patch(
-  "/:id",
-  validate(updateTaskSchema),
-  async (req, res, next) => {
-    try {
-      const data = await tasksService.updateTask(
-        req.params.id as string,
-        req.body
-      );
-      const response: ApiResponse = { success: true, data };
-      res.json(response);
-    } catch (error) {
-      next(error);
-    }
+tasksRouter.patch("/:id", validate(updateTaskSchema), async (req, res, next) => {
+  try {
+    const data = await tasksService.updateTask(req.params.id as string, req.body);
+    const response: ApiResponse = { success: true, data };
+    res.json(response);
+  } catch (error) {
+    next(error);
   }
-);
+});
 
 /** Eliminar tarea */
-tasksRouter.delete(
-  "/:id",
-  authorize("admin", "responsible"),
-  async (req, res, next) => {
-    try {
-      await tasksService.deleteTask(req.params.id as string);
-      const response: ApiResponse = {
-        success: true,
-        data: { message: "Tarea eliminada" },
-      };
-      res.json(response);
-    } catch (error) {
-      next(error);
-    }
+tasksRouter.delete("/:id", authorize("admin", "responsible"), async (req, res, next) => {
+  try {
+    await tasksService.deleteTask(req.params.id as string);
+    const response: ApiResponse = {
+      success: true,
+      data: { message: "Tarea eliminada" },
+    };
+    res.json(response);
+  } catch (error) {
+    next(error);
   }
-);
+});
 
 /** Asignar usuarios a tarea */
-tasksRouter.post(
-  "/:id/assign",
-  validate(assignSchema),
-  async (req, res, next) => {
-    try {
-      const data = await tasksService.assignTask(
-        req.params.id as string,
-        req.body.userIds
-      );
-      const response: ApiResponse = { success: true, data };
-      res.json(response);
-    } catch (error) {
-      next(error);
-    }
+tasksRouter.post("/:id/assign", validate(assignSchema), async (req, res, next) => {
+  try {
+    const data = await tasksService.assignTask(req.params.id as string, req.body.userIds);
+    const response: ApiResponse = { success: true, data };
+    res.json(response);
+  } catch (error) {
+    next(error);
   }
-);
+});
 
 /** Completar tarea */
-tasksRouter.post(
-  "/:id/complete",
-  validate(completeSchema),
-  async (req, res, next) => {
-    try {
-      const data = await tasksService.completeTask(
-        req.params.id as string,
-        req.user!.userId,
-        req.body.note
-      );
-      const response: ApiResponse = { success: true, data };
-      res.json(response);
-    } catch (error) {
-      next(error);
-    }
+tasksRouter.post("/:id/complete", validate(completeSchema), async (req, res, next) => {
+  try {
+    const data = await tasksService.completeTask(
+      req.params.id as string,
+      req.user!.userId,
+      req.body.note,
+    );
+    const response: ApiResponse = { success: true, data };
+    res.json(response);
+  } catch (error) {
+    next(error);
   }
-);
+});
 
 /** Configurar rotación */
 tasksRouter.post(
@@ -187,7 +155,7 @@ tasksRouter.post(
     } catch (error) {
       next(error);
     }
-  }
+  },
 );
 
 /** Rankings de gamificación */

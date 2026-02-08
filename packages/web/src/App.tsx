@@ -12,25 +12,23 @@ import { UserLoginPage } from "@/pages/auth/UserLoginPage";
 
 // Pages - App (lazy loaded)
 const DashboardPage = lazy(() =>
-  import("@/pages/DashboardPage").then((m) => ({ default: m.DashboardPage }))
+  import("@/pages/DashboardPage").then((m) => ({ default: m.DashboardPage })),
 );
-const TasksPage = lazy(() =>
-  import("@/pages/TasksPage").then((m) => ({ default: m.TasksPage }))
-);
+const TasksPage = lazy(() => import("@/pages/TasksPage").then((m) => ({ default: m.TasksPage })));
 const FinancePage = lazy(() =>
-  import("@/pages/FinancePage").then((m) => ({ default: m.FinancePage }))
+  import("@/pages/FinancePage").then((m) => ({ default: m.FinancePage })),
 );
 const CommunicationPage = lazy(() =>
-  import("@/pages/CommunicationPage").then((m) => ({ default: m.CommunicationPage }))
+  import("@/pages/CommunicationPage").then((m) => ({ default: m.CommunicationPage })),
 );
 const CalendarPage = lazy(() =>
-  import("@/pages/CalendarPage").then((m) => ({ default: m.CalendarPage }))
+  import("@/pages/CalendarPage").then((m) => ({ default: m.CalendarPage })),
 );
 const HealthPage = lazy(() =>
-  import("@/pages/HealthPage").then((m) => ({ default: m.HealthPage }))
+  import("@/pages/HealthPage").then((m) => ({ default: m.HealthPage })),
 );
 const SecurityPage = lazy(() =>
-  import("@/pages/SecurityPage").then((m) => ({ default: m.SecurityPage }))
+  import("@/pages/SecurityPage").then((m) => ({ default: m.SecurityPage })),
 );
 
 // Spinner de carga para Suspense

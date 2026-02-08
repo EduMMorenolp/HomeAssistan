@@ -68,36 +68,26 @@ usersRouter.get("/:id", authenticate, async (req, res, next) => {
 });
 
 /** Actualizar perfil */
-usersRouter.patch(
-  "/:id",
-  authenticate,
-  validate(updateUserSchema),
-  async (req, res, next) => {
-    try {
-      const user = await usersService.updateUser(req.params.id as string, req.body);
-      const response: ApiResponse = { success: true, data: user };
-      res.json(response);
-    } catch (error) {
-      next(error);
-    }
+usersRouter.patch("/:id", authenticate, validate(updateUserSchema), async (req, res, next) => {
+  try {
+    const user = await usersService.updateUser(req.params.id as string, req.body);
+    const response: ApiResponse = { success: true, data: user };
+    res.json(response);
+  } catch (error) {
+    next(error);
   }
-);
+});
 
 /** Eliminar usuario (solo admin) */
-usersRouter.delete(
-  "/:id",
-  authenticate,
-  authorize("admin"),
-  async (req, res, next) => {
-    try {
-      await usersService.deleteUser(req.params.id as string);
-      const response: ApiResponse = {
-        success: true,
-        data: { message: "Usuario eliminado" },
-      };
-      res.json(response);
-    } catch (error) {
-      next(error);
-    }
+usersRouter.delete("/:id", authenticate, authorize("admin"), async (req, res, next) => {
+  try {
+    await usersService.deleteUser(req.params.id as string);
+    const response: ApiResponse = {
+      success: true,
+      data: { message: "Usuario eliminado" },
+    };
+    res.json(response);
+  } catch (error) {
+    next(error);
   }
-);
+});

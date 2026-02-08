@@ -14,17 +14,7 @@ import type {
   HealthRoutineInfo,
 } from "@homeassistan/shared";
 import { BLOOD_TYPE_LABELS, FREQUENCY_LABELS } from "@homeassistan/shared";
-import {
-  Heart,
-  Pill,
-  Activity,
-  Plus,
-  X,
-  Trash2,
-  AlertTriangle,
-  User,
-  Check,
-} from "lucide-react";
+import { Heart, Pill, Activity, Plus, X, Trash2, AlertTriangle, User, Check } from "lucide-react";
 
 type Tab = "profiles" | "medications" | "routines";
 
@@ -39,9 +29,7 @@ export function HealthPage() {
 
   return (
     <div className="space-y-4 sm:space-y-6">
-      <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">
-        Salud
-      </h1>
+      <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">Salud</h1>
 
       <div className="flex gap-1 bg-slate-100 dark:bg-slate-800 rounded-lg p-1">
         {tabs.map((t) => (
@@ -52,7 +40,7 @@ export function HealthPage() {
               "flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-colors",
               tab === t.key
                 ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm"
-                : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+                : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300",
             )}
           >
             <t.icon className="w-4 h-4" />
@@ -94,8 +82,14 @@ function ProfilesSection() {
     mutationFn: async () => {
       await api.put("/health/profiles", {
         bloodType,
-        allergies: allergies.split(",").map((s) => s.trim()).filter(Boolean),
-        conditions: conditions.split(",").map((s) => s.trim()).filter(Boolean),
+        allergies: allergies
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean),
+        conditions: conditions
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean),
         emergencyNotes: emergencyNotes || undefined,
         doctorName: doctorName || undefined,
         doctorPhone: doctorPhone || undefined,
@@ -133,7 +127,9 @@ function ProfilesSection() {
                 className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm"
               >
                 {Object.entries(BLOOD_TYPE_LABELS).map(([k, v]) => (
-                  <option key={k} value={k}>{v}</option>
+                  <option key={k} value={k}>
+                    {v}
+                  </option>
                 ))}
               </select>
             </div>
@@ -199,14 +195,19 @@ function ProfilesSection() {
             {p.allergies?.length > 0 && (
               <div className="flex flex-wrap gap-1">
                 {(p.allergies as string[]).map((a, i) => (
-                  <span key={i} className="text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">
+                  <span
+                    key={i}
+                    className="text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                  >
                     {a}
                   </span>
                 ))}
               </div>
             )}
             {p.doctorName && (
-              <p className="text-xs text-slate-500">🩺 {p.doctorName} — {p.doctorPhone}</p>
+              <p className="text-xs text-slate-500">
+                🩺 {p.doctorName} — {p.doctorPhone}
+              </p>
             )}
           </div>
         ))}
@@ -313,7 +314,9 @@ function MedicationsSection() {
               className="px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm"
             >
               {Object.entries(FREQUENCY_LABELS).map(([k, v]) => (
-                <option key={k} value={k}>{v}</option>
+                <option key={k} value={k}>
+                  {v}
+                </option>
               ))}
             </select>
             <input
@@ -353,17 +356,13 @@ function MedicationsSection() {
                 "bg-white dark:bg-slate-800 rounded-xl p-4 border",
                 lowStock
                   ? "border-orange-300 dark:border-orange-800"
-                  : "border-slate-200 dark:border-slate-700"
+                  : "border-slate-200 dark:border-slate-700",
               )}
             >
               <div className="flex items-start justify-between">
                 <div>
-                  <h3 className="font-semibold text-sm text-slate-900 dark:text-white">
-                    {m.name}
-                  </h3>
-                  {m.dosage && (
-                    <p className="text-xs text-slate-500">{m.dosage}</p>
-                  )}
+                  <h3 className="font-semibold text-sm text-slate-900 dark:text-white">{m.name}</h3>
+                  {m.dosage && <p className="text-xs text-slate-500">{m.dosage}</p>}
                   <p className="text-xs text-slate-400 mt-0.5">
                     {FREQUENCY_LABELS[m.frequency]} · {m.userName}
                   </p>
@@ -385,20 +384,18 @@ function MedicationsSection() {
                 </div>
               </div>
               <div className="mt-2 flex items-center gap-2">
-                <div className={cn(
-                  "text-xs px-2 py-0.5 rounded-full font-medium",
-                  lowStock
-                    ? "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400"
-                    : "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                )}>
+                <div
+                  className={cn(
+                    "text-xs px-2 py-0.5 rounded-full font-medium",
+                    lowStock
+                      ? "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400"
+                      : "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
+                  )}
+                >
                   Stock: {m.stock}
                 </div>
-                {lowStock && (
-                  <AlertTriangle className="w-3.5 h-3.5 text-orange-500" />
-                )}
-                {!m.isActive && (
-                  <span className="text-xs text-slate-400">(inactivo)</span>
-                )}
+                {lowStock && <AlertTriangle className="w-3.5 h-3.5 text-orange-500" />}
+                {!m.isActive && <span className="text-xs text-slate-400">(inactivo)</span>}
               </div>
             </div>
           );
@@ -513,13 +510,9 @@ function RoutinesSection() {
             <div className="flex items-start justify-between">
               <div>
                 <h3 className="font-semibold text-sm text-slate-900 dark:text-white">{r.name}</h3>
-                {r.description && (
-                  <p className="text-xs text-slate-500 mt-0.5">{r.description}</p>
-                )}
+                {r.description && <p className="text-xs text-slate-500 mt-0.5">{r.description}</p>}
                 <div className="flex items-center gap-2 mt-1.5">
-                  {r.timeOfDay && (
-                    <span className="text-xs text-slate-400">🕐 {r.timeOfDay}</span>
-                  )}
+                  {r.timeOfDay && <span className="text-xs text-slate-400">🕐 {r.timeOfDay}</span>}
                   <span className="text-xs text-slate-400">· {r.userName}</span>
                 </div>
               </div>
@@ -538,7 +531,7 @@ function RoutinesSection() {
                     "w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-medium",
                     (r.daysOfWeek as number[])?.includes(i)
                       ? "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400"
-                      : "bg-slate-100 text-slate-400 dark:bg-slate-700"
+                      : "bg-slate-100 text-slate-400 dark:bg-slate-700",
                   )}
                 >
                   {d}

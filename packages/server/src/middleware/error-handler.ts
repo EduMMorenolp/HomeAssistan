@@ -10,19 +10,14 @@ export class AppError extends Error {
     public statusCode: number,
     public code: string,
     message: string,
-    public details?: unknown
+    public details?: unknown,
   ) {
     super(message);
     this.name = "AppError";
   }
 }
 
-export function errorHandler(
-  err: Error,
-  _req: Request,
-  res: Response,
-  _next: NextFunction
-) {
+export function errorHandler(err: Error, _req: Request, res: Response, _next: NextFunction) {
   console.error("[Error]", err);
 
   if (err instanceof AppError) {
@@ -42,10 +37,7 @@ export function errorHandler(
     success: false,
     error: {
       code: "INTERNAL_ERROR",
-      message:
-        process.env.NODE_ENV === "production"
-          ? "Error interno del servidor"
-          : err.message,
+      message: process.env.NODE_ENV === "production" ? "Error interno del servidor" : err.message,
     },
   };
   res.status(500).json(response);

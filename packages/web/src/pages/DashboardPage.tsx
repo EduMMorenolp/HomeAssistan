@@ -148,13 +148,13 @@ export function DashboardPage() {
               key={card.to}
               onClick={() => navigate(card.to)}
               className={cn(
-                "flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:shadow-md transition-all text-left group"
+                "flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:shadow-md transition-all text-left group",
               )}
             >
               <div
                 className={cn(
                   "w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl flex items-center justify-center text-white shrink-0",
-                  card.color
+                  card.color,
                 )}
               >
                 <card.icon className="w-5 h-5 sm:w-6 sm:h-6" />

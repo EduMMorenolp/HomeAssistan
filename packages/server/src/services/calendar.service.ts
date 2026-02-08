@@ -3,16 +3,8 @@
 // ══════════════════════════════════════════════
 
 import { eq, and, desc, gte, lte, between } from "drizzle-orm";
-import {
-  db,
-  events,
-  eventAttendees,
-  users,
-} from "@homeassistan/database";
-import type {
-  CreateEventRequest,
-  UpdateEventRequest,
-} from "@homeassistan/shared";
+import { db, events, eventAttendees, users } from "@homeassistan/database";
+import type { CreateEventRequest, UpdateEventRequest } from "@homeassistan/shared";
 import { AppError } from "../middleware/error-handler";
 
 // ── CRUD Eventos ─────────────────────────────
@@ -77,11 +69,7 @@ export async function getEventById(id: string, houseId: string) {
   return { ...event, attendees };
 }
 
-export async function createEvent(
-  houseId: string,
-  createdBy: string,
-  data: CreateEventRequest,
-) {
+export async function createEvent(houseId: string, createdBy: string, data: CreateEventRequest) {
   const [event] = await db
     .insert(events)
     .values({
@@ -111,11 +99,7 @@ export async function createEvent(
   return event;
 }
 
-export async function updateEvent(
-  id: string,
-  houseId: string,
-  data: UpdateEventRequest,
-) {
+export async function updateEvent(id: string, houseId: string, data: UpdateEventRequest) {
   const [existing] = await db
     .select()
     .from(events)
@@ -133,11 +117,7 @@ export async function updateEvent(
   if (data.location !== undefined) updateData.location = data.location;
   if (data.color !== undefined) updateData.color = data.color;
 
-  const [updated] = await db
-    .update(events)
-    .set(updateData)
-    .where(eq(events.id, id))
-    .returning();
+  const [updated] = await db.update(events).set(updateData).where(eq(events.id, id)).returning();
   return updated;
 }
 
@@ -160,10 +140,5 @@ export async function respondToEvent(
   await db
     .update(eventAttendees)
     .set({ status, respondedAt: new Date() })
-    .where(
-      and(
-        eq(eventAttendees.eventId, eventId),
-        eq(eventAttendees.userId, userId),
-      )
-    );
+    .where(and(eq(eventAttendees.eventId, eventId), eq(eventAttendees.userId, userId)));
 }

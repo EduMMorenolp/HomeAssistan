@@ -33,10 +33,7 @@ export async function getEmergencyContacts(houseId: string) {
     .orderBy(desc(emergencyContacts.isPrimary));
 }
 
-export async function createEmergencyContact(
-  houseId: string,
-  data: CreateEmergencyContactRequest,
-) {
+export async function createEmergencyContact(houseId: string, data: CreateEmergencyContactRequest) {
   const [row] = await db
     .insert(emergencyContacts)
     .values({
@@ -119,11 +116,7 @@ export async function createVaultEntry(
   return row;
 }
 
-export async function updateVaultEntry(
-  id: string,
-  houseId: string,
-  data: UpdateVaultEntryRequest,
-) {
+export async function updateVaultEntry(id: string, houseId: string, data: UpdateVaultEntryRequest) {
   const [existing] = await db
     .select()
     .from(secureVault)
@@ -180,10 +173,7 @@ export async function generateVisitorCode(
 }
 
 export async function useVisitorCode(code: string) {
-  const [entry] = await db
-    .select()
-    .from(visitorCodes)
-    .where(eq(visitorCodes.code, code));
+  const [entry] = await db.select().from(visitorCodes).where(eq(visitorCodes.code, code));
 
   if (!entry) throw new AppError(404, "INVALID_CODE", "Código inválido");
   if (entry.isUsed) throw new AppError(400, "CODE_ALREADY_USED", "Código ya utilizado");

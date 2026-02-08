@@ -75,7 +75,7 @@ export async function updateUser(
     email?: string;
     avatar?: string;
     profileType?: "power" | "focus";
-  }
+  },
 ) {
   const updateData: Record<string, unknown> = {
     updatedAt: new Date(),
@@ -86,17 +86,13 @@ export async function updateUser(
   if (data.avatar !== undefined) updateData.avatar = data.avatar;
   if (data.profileType) updateData.profileType = data.profileType;
 
-  const [user] = await db
-    .update(users)
-    .set(updateData)
-    .where(eq(users.id, id))
-    .returning({
-      id: users.id,
-      name: users.name,
-      email: users.email,
-      avatar: users.avatar,
-      profileType: users.profileType,
-    });
+  const [user] = await db.update(users).set(updateData).where(eq(users.id, id)).returning({
+    id: users.id,
+    name: users.name,
+    email: users.email,
+    avatar: users.avatar,
+    profileType: users.profileType,
+  });
 
   if (!user) {
     throw new AppError(404, "USER_NOT_FOUND", "Usuario no encontrado");
@@ -106,10 +102,7 @@ export async function updateUser(
 
 /** Eliminar usuario */
 export async function deleteUser(id: string) {
-  const [deleted] = await db
-    .delete(users)
-    .where(eq(users.id, id))
-    .returning({ id: users.id });
+  const [deleted] = await db.delete(users).where(eq(users.id, id)).returning({ id: users.id });
 
   if (!deleted) {
     throw new AppError(404, "USER_NOT_FOUND", "Usuario no encontrado");

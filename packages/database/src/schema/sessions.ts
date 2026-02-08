@@ -13,9 +13,7 @@ export const sessions = pgTable("sessions", {
   refreshToken: varchar("refresh_token", { length: 500 }).notNull(),
   isRevoked: boolean("is_revoked").default(false).notNull(),
   expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .defaultNow()
-    .notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
 export type Session = typeof sessions.$inferSelect;

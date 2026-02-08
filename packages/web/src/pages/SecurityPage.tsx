@@ -44,9 +44,7 @@ export function SecurityPage() {
 
   return (
     <div className="space-y-4 sm:space-y-6">
-      <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">
-        Seguridad
-      </h1>
+      <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">Seguridad</h1>
 
       <div className="flex gap-1 bg-slate-100 dark:bg-slate-800 rounded-lg p-1 overflow-x-auto">
         {tabs.map((t) => (
@@ -57,7 +55,7 @@ export function SecurityPage() {
               "flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap",
               tab === t.key
                 ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm"
-                : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+                : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300",
             )}
           >
             <t.icon className="w-4 h-4" />
@@ -187,13 +185,19 @@ function ContactsSection() {
             key={c.id}
             className="bg-white dark:bg-slate-800 rounded-xl p-4 border border-slate-200 dark:border-slate-700 flex items-center gap-3"
           >
-            <div className={cn(
-              "w-10 h-10 rounded-full flex items-center justify-center shrink-0",
-              c.isPrimary
-                ? "bg-yellow-100 dark:bg-yellow-900/30"
-                : "bg-slate-100 dark:bg-slate-700"
-            )}>
-              {c.isPrimary ? <Star className="w-5 h-5 text-yellow-500" /> : <Phone className="w-5 h-5 text-slate-400" />}
+            <div
+              className={cn(
+                "w-10 h-10 rounded-full flex items-center justify-center shrink-0",
+                c.isPrimary
+                  ? "bg-yellow-100 dark:bg-yellow-900/30"
+                  : "bg-slate-100 dark:bg-slate-700",
+              )}
+            >
+              {c.isPrimary ? (
+                <Star className="w-5 h-5 text-yellow-500" />
+              ) : (
+                <Phone className="w-5 h-5 text-slate-400" />
+              )}
             </div>
             <div className="flex-1 min-w-0">
               <p className="font-medium text-sm text-slate-900 dark:text-white">{c.name}</p>
@@ -306,7 +310,9 @@ function VaultSection() {
               className="px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm"
             >
               {Object.entries(VAULT_CATEGORY_LABELS).map(([k, v]) => (
-                <option key={k} value={k}>{v}</option>
+                <option key={k} value={k}>
+                  {v}
+                </option>
               ))}
             </select>
             <input
@@ -364,7 +370,11 @@ function VaultSection() {
                 onClick={() => toggleVisible(e.id)}
                 className="p-2 text-slate-400 hover:text-slate-600"
               >
-                {visibleIds.has(e.id) ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                {visibleIds.has(e.id) ? (
+                  <EyeOff className="w-4 h-4" />
+                ) : (
+                  <Eye className="w-4 h-4" />
+                )}
               </button>
               <button
                 onClick={() => {
@@ -486,7 +496,7 @@ function CodesSection() {
                 "bg-white dark:bg-slate-800 rounded-xl p-4 border flex items-center gap-3",
                 c.isUsed || expired
                   ? "border-slate-200 dark:border-slate-700 opacity-60"
-                  : "border-green-200 dark:border-green-800"
+                  : "border-green-200 dark:border-green-800",
               )}
             >
               <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center">
@@ -500,7 +510,9 @@ function CodesSection() {
                   {c.label ?? "Sin etiqueta"}
                   {c.isUsed && " · Usado"}
                   {expired && " · Expirado"}
-                  {c.expiresAt && !expired && ` · Expira: ${new Date(c.expiresAt).toLocaleString("es")}`}
+                  {c.expiresAt &&
+                    !expired &&
+                    ` · Expira: ${new Date(c.expiresAt).toLocaleString("es")}`}
                 </p>
               </div>
               <button

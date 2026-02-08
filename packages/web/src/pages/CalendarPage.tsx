@@ -95,8 +95,18 @@ export function CalendarPage() {
   const today = new Date();
 
   const monthNames = [
-    "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
-    "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
+    "Enero",
+    "Febrero",
+    "Marzo",
+    "Abril",
+    "Mayo",
+    "Junio",
+    "Julio",
+    "Agosto",
+    "Septiembre",
+    "Octubre",
+    "Noviembre",
+    "Diciembre",
   ];
 
   function prevMonth() {
@@ -130,9 +140,7 @@ export function CalendarPage() {
   return (
     <div className="space-y-4 sm:space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">
-          Calendario
-        </h1>
+        <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">Calendario</h1>
         <button
           onClick={() => setShowCreate(!showCreate)}
           className="flex items-center gap-1.5 px-3 py-2 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 transition-colors"
@@ -185,7 +193,9 @@ export function CalendarPage() {
               className="px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm"
             >
               {Object.entries(EVENT_TYPE_LABELS).map(([k, v]) => (
-                <option key={k} value={k}>{v}</option>
+                <option key={k} value={k}>
+                  {v}
+                </option>
               ))}
             </select>
             <select
@@ -229,20 +239,28 @@ export function CalendarPage() {
         {/* Mini calendar */}
         <div className="lg:col-span-2 bg-white dark:bg-slate-800 rounded-xl p-4 border border-slate-200 dark:border-slate-700">
           <div className="flex items-center justify-between mb-4">
-            <button onClick={prevMonth} className="p-1 hover:bg-slate-100 dark:hover:bg-slate-700 rounded">
+            <button
+              onClick={prevMonth}
+              className="p-1 hover:bg-slate-100 dark:hover:bg-slate-700 rounded"
+            >
               <ChevronLeft className="w-5 h-5 text-slate-600 dark:text-slate-400" />
             </button>
             <h3 className="font-semibold text-slate-900 dark:text-white">
               {monthNames[month]} {year}
             </h3>
-            <button onClick={nextMonth} className="p-1 hover:bg-slate-100 dark:hover:bg-slate-700 rounded">
+            <button
+              onClick={nextMonth}
+              className="p-1 hover:bg-slate-100 dark:hover:bg-slate-700 rounded"
+            >
               <ChevronRight className="w-5 h-5 text-slate-600 dark:text-slate-400" />
             </button>
           </div>
 
           <div className="grid grid-cols-7 gap-1 text-center">
             {["Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sa"].map((d) => (
-              <div key={d} className="text-xs font-medium text-slate-400 py-1">{d}</div>
+              <div key={d} className="text-xs font-medium text-slate-400 py-1">
+                {d}
+              </div>
             ))}
             {Array.from({ length: firstDay }).map((_, i) => (
               <div key={`empty-${i}`} />
@@ -266,8 +284,12 @@ export function CalendarPage() {
                   className={cn(
                     "relative py-1.5 rounded-lg text-sm transition-colors",
                     isSelected && "bg-blue-500 text-white",
-                    isToday && !isSelected && "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-bold",
-                    !isSelected && !isToday && "hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300"
+                    isToday &&
+                      !isSelected &&
+                      "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-bold",
+                    !isSelected &&
+                      !isToday &&
+                      "hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300",
                   )}
                 >
                   {day}
@@ -277,7 +299,9 @@ export function CalendarPage() {
                         <div
                           key={e.id}
                           className="w-1 h-1 rounded-full"
-                          style={{ backgroundColor: e.color || EVENT_TYPE_COLORS[e.type] || "#3b82f6" }}
+                          style={{
+                            backgroundColor: e.color || EVENT_TYPE_COLORS[e.type] || "#3b82f6",
+                          }}
                         />
                       ))}
                     </div>
@@ -291,7 +315,11 @@ export function CalendarPage() {
         {/* Events for selected day */}
         <div className="space-y-3">
           <h3 className="font-semibold text-slate-900 dark:text-white">
-            {selectedDate.toLocaleDateString("es", { weekday: "long", day: "numeric", month: "long" })}
+            {selectedDate.toLocaleDateString("es", {
+              weekday: "long",
+              day: "numeric",
+              month: "long",
+            })}
           </h3>
           {selectedDayEvents.length === 0 && (
             <p className="text-sm text-slate-400">Sin eventos este día</p>
@@ -314,7 +342,10 @@ export function CalendarPage() {
                   <div className="flex items-center gap-2 mt-1 text-xs text-slate-400">
                     <CalendarIcon className="w-3 h-3" />
                     {!e.allDay
-                      ? new Date(e.startDate).toLocaleTimeString("es", { hour: "2-digit", minute: "2-digit" })
+                      ? new Date(e.startDate).toLocaleTimeString("es", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })
                       : "Todo el día"}
                     {e.location && (
                       <>
