@@ -36,3 +36,24 @@ services:
 volumes:
   postgres-data:
   redis-data:
+
+# ═══════════════════════════════════════════════
+# Producción: docker compose --profile prod up
+# ═══════════════════════════════════════════════
+# services:
+#   app:
+#     profiles: [prod]
+#     build:
+#       context: .
+#       dockerfile: Dockerfile
+#     restart: unless-stopped
+#     depends_on:
+#       postgres:
+#         condition: service_healthy
+#     environment:
+#       NODE_ENV: production
+#       DATABASE_URL: postgresql://${POSTGRES_USER:-homeassistan}:${POSTGRES_PASSWORD:-homeassistan_secret}@postgres:5432/${POSTGRES_DB:-homeassistan}
+#       JWT_SECRET: ${JWT_SECRET:-change_me}
+#       PORT: 3001
+#     ports:
+#       - "3001:3001"

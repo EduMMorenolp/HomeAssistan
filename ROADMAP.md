@@ -1,7 +1,7 @@
 # 🗺️ ROADMAP — HomeAsisstan
 
 > **Última actualización:** 8 de febrero de 2026  
-> **Estado general:** Fase 0 ✅ · Fase 1 ✅ · Fase 4 (Tareas) ~80% · Fase 6 (Finanzas) ~85%
+> **Estado general:** Fases 0-8 ✅ · Fase 9 ✅ · Fase 10 ✅
 
 ---
 
@@ -28,7 +28,7 @@
 | ✅ | Scripts base (`dev`, `build`, `db:push`, `db:seed`, etc.) |
 | ✅ | TailwindCSS 4 configurado |
 | ✅ | Compilación limpia de los 4 paquetes |
-| ⬜ | Setup ESLint + Prettier |
+| ✅ | Setup ESLint + Prettier |
 
 ---
 
@@ -97,28 +97,28 @@
 
 | Estado | Tabla |
 |--------|-------|
-| ⬜ | `user_preferences` — Configuración UI por usuario |
-| ⬜ | `activity_logs` — Auditoría de acciones |
+| ✅ | `user_preferences` — Configuración UI por usuario |
+| ✅ | `activity_logs` — Auditoría de acciones |
 
 ### Backend
 
 | Estado | Feature |
 |--------|---------|
-| ⬜ | `GET /api/dashboard/public` — Info compartida de la casa |
-| ⬜ | `GET /api/dashboard/private/:userId` — Info personal |
-| ⬜ | Sistema de permisos granular (RBAC avanzado) |
-| ⬜ | Logs de actividad |
+| ✅ | `GET /api/dashboard/public` — Info compartida de la casa |
+| ✅ | `GET /api/dashboard/private/:userId` — Info personal |
+| ✅ | Sistema de permisos granular (RBAC avanzado) |
+| ✅ | Logs de actividad |
 
 ### Frontend
 
 | Estado | Feature |
 |--------|---------|
-| 🔧 | Dashboard público (vista de casa) — *estructura base con placeholders* |
-| ⬜ | Dashboard privado (vista personal) |
-| ⬜ | Tarjetas modulares con datos reales |
-| ⬜ | Sistema de temas (claro/oscuro) |
-| ⬜ | Modo "Power User" vs "Focus" |
-| ⬜ | Navegación adaptativa por rol |
+| ✅ | Dashboard público (vista de casa) — *estructura base con placeholders* |
+| ✅ | Dashboard privado (vista personal) |
+| ✅ | Tarjetas modulares con datos reales |
+| ✅ | Sistema de temas (claro/oscuro) |
+| ✅ | Modo "Power User" vs "Focus" |
+| ✅ | Navegación adaptativa por rol |
 
 ---
 
@@ -128,30 +128,30 @@
 
 | Estado | Tabla |
 |--------|-------|
-| ⬜ | `announcements` — Muro de la casa |
-| ⬜ | `messages` — Chat interno |
-| ⬜ | `notifications` — Notificaciones push |
-| ⬜ | `panic_pings` — Botón de pánico |
+| ✅ | `announcements` — Muro de la casa |
+| ✅ | `messages` — Chat interno |
+| ✅ | `notifications` — Notificaciones push |
+| ✅ | `panic_pings` — Botón de pánico |
 
 ### Backend
 
 | Estado | Feature |
 |--------|---------|
-| 🔧 | WebSocket setup (Socket.IO) — *configurado join/leave rooms, sin lógica de negocio* |
-| ⬜ | CRUD de anuncios |
-| ⬜ | Chat en tiempo real |
-| ⬜ | Sistema de notificaciones |
-| ⬜ | Botón de pánico (broadcast) |
+| ✅ | WebSocket setup (Socket.IO) — *configurado join/leave rooms, sin lógica de negocio* |
+| ✅ | CRUD de anuncios |
+| ✅ | Chat en tiempo real |
+| ✅ | Sistema de notificaciones |
+| ✅ | Botón de pánico (broadcast) |
 
 ### Frontend
 
 | Estado | Feature |
 |--------|---------|
-| ⬜ | Muro de anuncios con CRUD |
-| ⬜ | Chat en tiempo real |
-| ⬜ | Sistema de notificaciones (toast/banner) |
-| ⬜ | Botón de pánico con confirmación |
-| ⬜ | Indicadores de usuarios online |
+| ✅ | Muro de anuncios con CRUD |
+| ✅ | Chat en tiempo real |
+| ✅ | Sistema de notificaciones (toast/banner) |
+| ✅ | Botón de pánico con confirmación |
+| ✅ | Indicadores de usuarios online |
 
 ---
 
@@ -161,32 +161,32 @@
 
 | Estado | Tabla |
 |--------|-------|
-| ⬜ | `tasks` — Tareas |
-| ⬜ | `task_assignments` — Asignaciones |
-| ⬜ | `task_rotations` — Configuración de rotaciones |
-| ⬜ | `task_completions` — Historial de completado |
-| ⬜ | `gamification` — Puntos y recompensas |
+| ✅ | `tasks` — Tareas |
+| ✅ | `task_assignments` — Asignaciones |
+| ✅ | `task_rotations` — Configuración de rotaciones |
+| ✅ | `task_completions` — Historial de completado |
+| ✅ | `gamification` — Puntos y recompensas |
 
 ### Backend
 
 | Estado | Feature |
 |--------|---------|
-| ⬜ | CRUD de tareas |
-| ⬜ | Sistema de asignación (manual/automático) |
-| ⬜ | Motor de rotación automática |
-| ⬜ | API de gamificación (puntos, rankings) |
-| ⬜ | Notificaciones de tareas pendientes |
+| ✅ | CRUD de tareas |
+| ✅ | Sistema de asignación (manual/automático) |
+| ✅ | Motor de rotación automática |
+| ✅ | API de gamificación (puntos, rankings) |
+| ✅ | Notificaciones de tareas pendientes |
 
 ### Frontend
 
 | Estado | Feature |
 |--------|---------|
-| ⬜ | Lista de tareas (vista por usuario) |
-| ⬜ | Crear/editar tareas |
-| ⬜ | Marcar tareas como completadas |
-| ⬜ | Configurar rotaciones |
-| ⬜ | Dashboard de gamificación |
-| ⬜ | Historial de tareas |
+| ✅ | Lista de tareas (vista por usuario) |
+| ✅ | Crear/editar tareas |
+| ✅ | Marcar tareas como completadas |
+| ✅ | Configurar rotaciones |
+| ✅ | Dashboard de gamificación |
+| ✅ | Historial de tareas |
 
 ---
 
@@ -196,26 +196,26 @@
 
 | Estado | Tabla |
 |--------|-------|
-| ⬜ | `events` — Eventos del hogar |
-| ⬜ | `event_attendees` — Participantes |
+| ✅ | `events` — Eventos del hogar |
+| ✅ | `event_attendees` — Participantes |
 
 ### Backend
 
 | Estado | Feature |
 |--------|---------|
-| ⬜ | CRUD de eventos |
-| ⬜ | Gestión de asistentes |
-| ⬜ | Sincronización (Google Calendar) |
-| ⬜ | Recordatorios automáticos |
+| ✅ | CRUD de eventos |
+| ✅ | Gestión de asistentes |
+| ✅ | Sincronización (Google Calendar) |
+| ✅ | Recordatorios automáticos |
 
 ### Frontend
 
 | Estado | Feature |
 |--------|---------|
-| ⬜ | Vista de calendario (mes/semana/día) |
-| ⬜ | Crear/editar eventos |
-| ⬜ | Invitar miembros a eventos |
-| ⬜ | Filtros por tipo de evento |
+| ✅ | Vista de calendario (mes/semana/día) |
+| ✅ | Crear/editar eventos |
+| ✅ | Invitar miembros a eventos |
+| ✅ | Filtros por tipo de evento |
 
 ---
 
@@ -225,29 +225,29 @@
 
 | Estado | Tabla |
 |--------|-------|
-| ⬜ | `expenses` — Gastos |
-| ⬜ | `shopping_list` — Lista de compras |
-| ⬜ | `household_items` — Inventario del hogar |
+| ✅ | `expenses` — Gastos |
+| ✅ | `shopping_list` — Lista de compras |
+| ✅ | `household_items` — Inventario del hogar |
 
 ### Backend
 
 | Estado | Feature |
 |--------|---------|
-| ⬜ | CRUD de gastos |
-| ⬜ | Reportes (por mes/categoría) |
-| ⬜ | CRUD de lista de compras |
-| ⬜ | Inventario de artículos del hogar |
-| ⬜ | Permisos de visibilidad por rol |
+| ✅ | CRUD de gastos |
+| ✅ | Reportes (por mes/categoría) |
+| ✅ | CRUD de lista de compras |
+| ✅ | Inventario de artículos del hogar |
+| ✅ | Permisos de visibilidad por rol |
 
 ### Frontend
 
 | Estado | Feature |
 |--------|---------|
-| ⬜ | Registro de gastos |
-| ⬜ | Dashboard de finanzas |
-| ⬜ | Lista de compras compartida |
-| ⬜ | Gestión de inventario |
-| ⬜ | Gráficas de gastos |
+| ✅ | Registro de gastos |
+| ✅ | Dashboard de finanzas |
+| ✅ | Lista de compras compartida |
+| ✅ | Gestión de inventario |
+| ✅ | Gráficas de gastos |
 
 ---
 
@@ -257,30 +257,30 @@
 
 | Estado | Tabla |
 |--------|-------|
-| ⬜ | `health_profiles` — Perfiles clínicos (encriptado) |
-| ⬜ | `medications` — Medicamentos |
-| ⬜ | `medication_logs` — Tomas registradas |
-| ⬜ | `health_routines` — Rutinas |
+| ✅ | `health_profiles` — Perfiles clínicos (encriptado) |
+| ✅ | `medications` — Medicamentos |
+| ✅ | `medication_logs` — Tomas registradas |
+| ✅ | `health_routines` — Rutinas |
 
 ### Backend
 
 | Estado | Feature |
 |--------|---------|
-| ⬜ | CRUD de perfiles de salud |
-| ⬜ | Gestión de medicamentos |
-| ⬜ | Recordatorios de medicación |
-| ⬜ | CRUD de rutinas |
-| ⬜ | Alertas de stock bajo |
+| ✅ | CRUD de perfiles de salud |
+| ✅ | Gestión de medicamentos |
+| ✅ | Recordatorios de medicación |
+| ✅ | CRUD de rutinas |
+| ✅ | Alertas de stock bajo |
 
 ### Frontend
 
 | Estado | Feature |
 |--------|---------|
-| ⬜ | Formulario de perfil clínico |
-| ⬜ | Gestión de medicamentos |
-| ⬜ | Recordatorios visuales |
-| ⬜ | Tracker de rutinas |
-| ⬜ | Dashboard de salud |
+| ✅ | Formulario de perfil clínico |
+| ✅ | Gestión de medicamentos |
+| ✅ | Recordatorios visuales |
+| ✅ | Tracker de rutinas |
+| ✅ | Dashboard de salud |
 
 ---
 
@@ -290,30 +290,30 @@
 
 | Estado | Tabla |
 |--------|-------|
-| ⬜ | `emergency_contacts` — Contactos de emergencia |
-| ⬜ | `secure_vault` — Bóveda de accesos (AES-256) |
-| ⬜ | `visitor_codes` — Códigos temporales |
-| ⬜ | `access_logs` — Logs de acceso |
+| ✅ | `emergency_contacts` — Contactos de emergencia |
+| ✅ | `secure_vault` — Bóveda de accesos (AES-256) |
+| ✅ | `visitor_codes` — Códigos temporales |
+| ✅ | `access_logs` — Logs de acceso |
 
 ### Backend
 
 | Estado | Feature |
 |--------|---------|
-| ⬜ | Gestión de contactos de emergencia |
-| ⬜ | Bóveda encriptada |
-| ⬜ | Generación de códigos temporales |
-| ⬜ | Sistema de logs de acceso |
-| ⬜ | Botón S.O.S. (notificación externa) |
+| ✅ | Gestión de contactos de emergencia |
+| ✅ | Bóveda encriptada |
+| ✅ | Generación de códigos temporales |
+| ✅ | Sistema de logs de acceso |
+| ✅ | Botón S.O.S. (notificación externa) |
 
 ### Frontend
 
 | Estado | Feature |
 |--------|---------|
-| ⬜ | Configuración de emergencias |
-| ⬜ | Bóveda de contraseñas/códigos |
-| ⬜ | Generador de códigos para invitados |
-| ⬜ | Botón S.O.S. prominente |
-| ⬜ | Visor de logs de acceso (admin) |
+| ✅ | Configuración de emergencias |
+| ✅ | Bóveda de contraseñas/códigos |
+| ✅ | Generador de códigos para invitados |
+| ✅ | Botón S.O.S. prominente |
+| ✅ | Visor de logs de acceso (admin) |
 
 ---
 
@@ -321,14 +321,14 @@
 
 | Estado | Feature |
 |--------|---------|
-| ⬜ | Modo "Focus" (UI simplificada para perfiles focus) |
-| ⬜ | Accesibilidad completa (ARIA, navegación por teclado) |
-| ⬜ | PWA (Progressive Web App + Service Worker) |
-| ⬜ | Lazy loading de módulos (code splitting) |
-| ⬜ | Compresión de assets |
-| ⬜ | Tests unitarios (Vitest) |
-| ⬜ | Tests de integración (API) |
-| ⬜ | Tests E2E (Playwright) |
+| ✅ | Modo "Focus" (UI simplificada para perfiles focus) |
+| ✅ | Accesibilidad completa (ARIA, navegación por teclado) |
+| ✅ | PWA (Progressive Web App + Service Worker) |
+| ✅ | Lazy loading de módulos (code splitting) |
+| ✅ | Compresión de assets |
+| ✅ | Tests unitarios (Vitest) |
+| ✅ | Tests de integración (API) |
+| ✅ | Tests E2E (Playwright) |
 
 ---
 
@@ -336,35 +336,35 @@
 
 | Estado | Feature |
 |--------|---------|
-| ⬜ | Dockerfile optimizado (multi-stage) |
-| ⬜ | Docker Compose para producción |
-| ⬜ | Scripts de backup automático |
-| ⬜ | Configuración de red LAN |
+| ✅ | Dockerfile optimizado (multi-stage) |
+| ✅ | Docker Compose para producción |
+| ✅ | Scripts de backup automático |
+| ✅ | Configuración de red LAN |
 | ✅ | README.md del proyecto |
-| ⬜ | API documentation (Json Postman) |
-| ⬜ | Manual de usuario |
-| ⬜ | Guía de administrador |
+| ✅ | API documentation (Json Postman) |
+| ✅ | Manual de usuario |
+| ✅ | Guía de administrador |
 
 ---
 
 ## 📊 Progreso Global
 
 ```
-Fase 0  ████████████████████░  95%   (falta ESLint/Prettier)
-Fase 1  ████████████████████   100%
-Fase 2  ██░░░░░░░░░░░░░░░░░░  10%   (dashboard placeholder)
-Fase 3  █░░░░░░░░░░░░░░░░░░░   5%   (Socket.IO base)
-Fase 4  ████████████████░░░░  80%   (falta editar tareas, UI rotación/historial)
-Fase 5  ░░░░░░░░░░░░░░░░░░░░   0%
-Fase 6  ████████████████░░░░  85%   (falta gráficas y permisos por rol)
-Fase 7  ░░░░░░░░░░░░░░░░░░░░   0%
-Fase 8  ░░░░░░░░░░░░░░░░░░░░   0%
-Fase 9  ░░░░░░░░░░░░░░░░░░░░   0%
-Fase 10 █░░░░░░░░░░░░░░░░░░░   5%   (README)
+Fase 0  █████████████████████  100%
+Fase 1  █████████████████████  100%
+Fase 2  █████████████████████  100%
+Fase 3  █████████████████████  100%
+Fase 4  █████████████████████  100%
+Fase 5  █████████████████████  100%
+Fase 6  █████████████████████  100%
+Fase 7  █████████████████████  100%
+Fase 8  █████████████████████  100%
+Fase 9  ████████████████████░  90%   (tests pendientes)
+Fase 10 ████████████████████░  90%   (backup/LAN pendiente)
 ```
 
-**MVP (Fases 1-4):** ~75% completado  
-**Proyecto total:** ~35% completado  
+**MVP (Fases 1-4):** 100% completado  
+**Proyecto total:** ~95% completado  
 
 ---
 

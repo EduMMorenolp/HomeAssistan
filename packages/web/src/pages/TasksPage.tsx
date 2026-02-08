@@ -23,12 +23,14 @@ import {
   Filter,
   Users,
   RotateCcw,
+  Pencil,
 } from "lucide-react";
 import type {
   TaskInfo,
   TaskPriority,
   TaskStatus,
   CreateTaskRequest,
+  UpdateTaskRequest,
   UserRanking,
 } from "@homeassistan/shared";
 import {
@@ -255,6 +257,7 @@ function CompletedSection({ tasks }: { tasks: TaskInfo[] }) {
 function TaskCard({ task }: { task: TaskInfo }) {
   const queryClient = useQueryClient();
   const { user } = useAuthStore();
+  const [editing, setEditing] = useState(false);
 
   const completeMutation = useMutation({
     mutationFn: async () => {
@@ -376,19 +379,32 @@ function TaskCard({ task }: { task: TaskInfo }) {
           </div>
         </div>
 
-        {/* Eliminar */}
-        {(user?.role === "admin" || user?.role === "responsible") && (
-          <button
-            onClick={() => {
-              if (confirm("¿Eliminar esta tarea?")) deleteMutation.mutate();
-            }}
-            disabled={deleteMutation.isPending}
-            className="text-slate-300 hover:text-red-500 dark:text-slate-600 dark:hover:text-red-400 transition-colors shrink-0"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        )}
+        {/* Acciones */}
+        <div className="flex items-center gap-1 shrink-0">
+          {!isCompleted && (
+            <button
+              onClick={() => setEditing(true)}
+              className="text-slate-300 hover:text-blue-500 dark:text-slate-600 dark:hover:text-blue-400 transition-colors p-0.5"
+              title="Editar tarea"
+            >
+              <Pencil className="w-3.5 h-3.5" />
+            </button>
+          )}
+          {(user?.role === "admin" || user?.role === "responsible") && (
+            <button
+              onClick={() => {
+                if (confirm("¿Eliminar esta tarea?")) deleteMutation.mutate();
+              }}
+              disabled={deleteMutation.isPending}
+              className="text-slate-300 hover:text-red-500 dark:text-slate-600 dark:hover:text-red-400 transition-colors p-0.5"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
+        </div>
       </div>
+
+      {editing && <EditTaskModal task={task} onClose={() => setEditing(false)} />}
     </div>
   );
 }
@@ -451,6 +467,117 @@ function Rankings() {
           </div>
         </div>
       ))}
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════
+// Modal: Editar Tarea
+// ══════════════════════════════════════════════
+
+function EditTaskModal({ task, onClose }: { task: TaskInfo; onClose: () => void }) {
+  const queryClient = useQueryClient();
+  const [form, setForm] = useState<UpdateTaskRequest>({
+    title: task.title,
+    description: task.description ?? "",
+    priority: task.priority,
+    category: task.category ?? "",
+    recurrence: task.recurrence ?? "none",
+    points: task.points ?? 10,
+    dueDate: task.dueDate ? new Date(task.dueDate).toISOString().split("T")[0] : undefined,
+  });
+
+  const mutation = useMutation({
+    mutationFn: async (body: UpdateTaskRequest) => {
+      const { data } = await api.put(`/tasks/${task.id}`, body);
+      return data.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
+      toast.success("Tarea actualizada");
+      onClose();
+    },
+    onError: () => toast.error("Error al actualizar tarea"),
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form.title?.trim()) return;
+    mutation.mutate(form);
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+      <div className="relative bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-700">
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
+            Editar tarea
+          </h2>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+            <X className="w-5 h-5 text-slate-500" />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="p-4 space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Título *</label>
+            <input type="text" value={form.title ?? ""} onChange={(e) => setForm({ ...form, title: e.target.value })}
+              className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-transparent" autoFocus />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Descripción</label>
+            <textarea value={form.description ?? ""} onChange={(e) => setForm({ ...form, description: e.target.value })}
+              className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-transparent" rows={2} />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Prioridad</label>
+              <select value={form.priority ?? "medium"} onChange={(e) => setForm({ ...form, priority: e.target.value as TaskPriority })}
+                className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-green-500">
+                {(Object.entries(TASK_PRIORITY_LABELS) as [TaskPriority, string][]).map(([k, v]) => (
+                  <option key={k} value={k}>{v}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Categoría</label>
+              <select value={form.category ?? ""} onChange={(e) => setForm({ ...form, category: e.target.value })}
+                className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-green-500">
+                <option value="">Sin categoría</option>
+                {TASK_CATEGORY_DEFAULTS.map((c) => <option key={c} value={c}>{c}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Recurrencia</label>
+              <select value={form.recurrence ?? "none"} onChange={(e) => setForm({ ...form, recurrence: e.target.value as any })}
+                className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-green-500">
+                <option value="none">Sin repetir</option>
+                <option value="daily">Diaria</option>
+                <option value="weekly">Semanal</option>
+                <option value="biweekly">Quincenal</option>
+                <option value="monthly">Mensual</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Puntos</label>
+              <input type="number" min={0} max={1000} value={form.points ?? 10}
+                onChange={(e) => setForm({ ...form, points: parseInt(e.target.value) || 0 })}
+                className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-green-500" />
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Fecha límite</label>
+            <input type="date" value={form.dueDate ?? ""} onChange={(e) => setForm({ ...form, dueDate: e.target.value || undefined })}
+              className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-green-500" />
+          </div>
+          <button type="submit" disabled={mutation.isPending || !form.title?.trim()}
+            className="w-full py-2.5 bg-blue-500 hover:bg-blue-600 disabled:opacity-50 text-white rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2">
+            {mutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Pencil className="w-4 h-4" />}
+            Guardar cambios
+          </button>
+        </form>
+      </div>
     </div>
   );
 }

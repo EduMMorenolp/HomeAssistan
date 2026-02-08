@@ -12,6 +12,11 @@ import { housesRouter } from "./routes/houses.routes";
 import { usersRouter } from "./routes/users.routes";
 import { tasksRouter } from "./routes/tasks.routes";
 import { financeRouter } from "./routes/finance.routes";
+import { dashboardRouter } from "./routes/dashboard.routes";
+import { communicationRouter } from "./routes/communication.routes";
+import { calendarRouter } from "./routes/calendar.routes";
+import { healthRouter } from "./routes/health.routes";
+import { securityRouter } from "./routes/security.routes";
 
 export const app: Express = express();
 
@@ -38,6 +43,11 @@ app.use("/api/houses", housesRouter);
 app.use("/api/users", usersRouter);
 app.use("/api/tasks", tasksRouter);
 app.use("/api/finance", financeRouter);
+app.use("/api/dashboard", dashboardRouter);
+app.use("/api/communication", communicationRouter);
+app.use("/api/calendar", calendarRouter);
+app.use("/api/health", healthRouter);
+app.use("/api/security", securityRouter);
 
 // ── Error Handler (must be last) ─────────────
 app.use(errorHandler);

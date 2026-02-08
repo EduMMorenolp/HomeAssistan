@@ -4,6 +4,9 @@
 
 import { useAuthStore } from "@/stores/auth.store";
 import { cn } from "@/lib/utils";
+import { api } from "@/lib/api";
+import { useQuery } from "@tanstack/react-query";
+import type { DashboardStats, ApiResponse } from "@homeassistan/shared";
 import {
   MessageSquare,
   CheckSquare,
@@ -71,6 +74,14 @@ export function DashboardPage() {
   const { user, house } = useAuthStore();
   const navigate = useNavigate();
 
+  const { data: stats } = useQuery<DashboardStats>({
+    queryKey: ["dashboard-stats"],
+    queryFn: async () => {
+      const { data } = await api.get<ApiResponse<DashboardStats>>("/dashboard/stats");
+      return data.data!;
+    },
+  });
+
   return (
     <div className="space-y-4 sm:space-y-6">
       {/* Welcome */}
@@ -92,7 +103,7 @@ export function DashboardPage() {
             </div>
             <div>
               <p className="text-2xl font-bold text-slate-900 dark:text-white">
-                —
+                {stats?.houseMembersCount ?? "—"}
               </p>
               <p className="text-xs text-slate-500">Miembros</p>
             </div>
@@ -105,7 +116,7 @@ export function DashboardPage() {
             </div>
             <div>
               <p className="text-2xl font-bold text-slate-900 dark:text-white">
-                —
+                {stats?.pendingTasks ?? "—"}
               </p>
               <p className="text-xs text-slate-500">Tareas pendientes</p>
             </div>
@@ -118,7 +129,7 @@ export function DashboardPage() {
             </div>
             <div>
               <p className="text-2xl font-bold text-slate-900 dark:text-white">
-                —
+                {stats?.unreadNotifications ?? "—"}
               </p>
               <p className="text-xs text-slate-500">Notificaciones</p>
             </div>

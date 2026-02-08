@@ -30,6 +30,21 @@ export function setupSocketIO(httpServer: HttpServer) {
       socket.leave(`house:${houseId}`);
     });
 
+    // Chat: enviar mensaje en tiempo real
+    socket.on("chat:message", (data: { houseId: string; message: unknown }) => {
+      socket.to(`house:${data.houseId}`).emit("chat:message", data.message);
+    });
+
+    // Pánico: alerta en tiempo real
+    socket.on("panic:trigger", (data: { houseId: string; ping: unknown }) => {
+      io.to(`house:${data.houseId}`).emit("panic:alert", data.ping);
+    });
+
+    // Notificación en tiempo real
+    socket.on("notification:new", (data: { houseId: string; notification: unknown }) => {
+      io.to(`house:${data.houseId}`).emit("notification:new", data.notification);
+    });
+
     socket.on("disconnect", () => {
       console.log(`[Socket] Disconnected: ${socket.id}`);
     });

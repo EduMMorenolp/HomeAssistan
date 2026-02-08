@@ -182,6 +182,43 @@ function ExpensesSection() {
         </div>
       )}
 
+      {/* Gráfico de barras por categoría */}
+      {!loadingSummary && summary && summary.byCategory.length > 0 && (
+        <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4">
+          <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-3">
+            Distribución por categoría
+          </h3>
+          <div className="space-y-2">
+            {summary.byCategory.map((cat) => {
+              const pct = summary.totalMonth > 0
+                ? (cat.total / summary.totalMonth) * 100
+                : 0;
+              return (
+                <div key={cat.category} className="space-y-0.5">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-slate-600 dark:text-slate-400">
+                      {EXPENSE_CATEGORY_LABELS[cat.category]}
+                    </span>
+                    <span className="font-medium text-slate-900 dark:text-white">
+                      ${cat.total.toFixed(2)} ({pct.toFixed(0)}%)
+                    </span>
+                  </div>
+                  <div className="h-2.5 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+                    <div
+                      className="h-full rounded-full transition-all duration-500"
+                      style={{
+                        width: `${pct}%`,
+                        backgroundColor: EXPENSE_CATEGORY_COLORS[cat.category] || "#6b7280",
+                      }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Botón añadir */}
       <div className="flex justify-end">
         <button
