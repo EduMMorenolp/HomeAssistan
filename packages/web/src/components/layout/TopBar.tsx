@@ -65,7 +65,7 @@ export function TopBar({ onMenuToggle }: TopBarProps) {
             {user?.name?.charAt(0) || <User className="w-4 h-4" />}
           </div>
           <div className="hidden md:block">
-            <p className="text-sm font-medium text-slate-900 dark:text-white truncate max-w-[120px]">
+            <p className="text-sm font-medium text-slate-900 dark:text-white truncate max-w-30">
               {user?.name || "Usuario"}
             </p>
             <p className="text-xs text-slate-500 capitalize">{user?.role}</p>
