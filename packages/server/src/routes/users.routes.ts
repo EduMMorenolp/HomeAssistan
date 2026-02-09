@@ -5,9 +5,17 @@
 import { Router, type Router as RouterType } from "express";
 import { z } from "zod";
 import { validate } from "../middleware/validate";
-import { authenticate, authorize, ownerOrRole, requirePermission } from "../middleware/auth";
+import {
+  authenticate,
+  authorize,
+  ownerOrRole,
+  requirePermission,
+  belongsToHouse,
+} from "../middleware/auth";
 import * as usersService from "../services/users.service";
+import * as authService from "../services/auth.service";
 import type { ApiResponse } from "@homeassistan/shared";
+import { ROLE_HIERARCHY, type Role } from "@homeassistan/shared";
 
 export const usersRouter: RouterType = Router();
 
@@ -155,3 +163,145 @@ usersRouter.delete("/:id", authenticate, authorize("admin"), async (req, res, ne
     next(error);
   }
 });
+
+// ══════════════════════════════════════════════
+// House-level Member Management
+// ══════════════════════════════════════════════
+
+/** Obtener miembros de una casa */
+usersRouter.get(
+  "/house/:houseId/members",
+  authenticate,
+  belongsToHouse("houseId"),
+  async (req, res, next) => {
+    try {
+      const members = await usersService.getHouseMembers(req.params.houseId as string);
+      const response: ApiResponse = { success: true, data: members };
+      res.json(response);
+    } catch (error) {
+      next(error);
+    }
+  },
+);
+
+/** Cambiar rol de un miembro (admin o responsible) */
+usersRouter.patch(
+  "/house/:houseId/members/:userId/role",
+  authenticate,
+  belongsToHouse("houseId"),
+  requirePermission("system", "createUserOther"),
+  async (req, res, next) => {
+    try {
+      const { role } = req.body;
+      const { userId, houseId } = req.params;
+      const creatorRole = req.user!.role;
+
+      if (!role) {
+        res.status(400).json({ error: "role is required" });
+        return;
+      }
+
+      // Un responsible NO puede crear/promover a responsible o admin
+      if (
+        (role === "responsible" || role === "admin") &&
+        creatorRole !== "admin"
+      ) {
+        res.status(403).json({
+          error: "Solo un administrador puede asignar rol responsible o admin",
+        });
+        return;
+      }
+
+      // No se puede cambiar el rol de alguien con mayor jerarquía
+      const members = await usersService.getHouseMembers(houseId as string);
+      const targetMember = members.find((m) => m.userId === userId);
+      if (
+        targetMember &&
+        ROLE_HIERARCHY[targetMember.role as Role] >= ROLE_HIERARCHY[creatorRole as Role]
+      ) {
+        res.status(403).json({
+          error: "No puedes cambiar el rol de un usuario con igual o mayor jerarquía",
+        });
+        return;
+      }
+
+      const updated = await usersService.updateMemberRole(
+        userId as string,
+        houseId as string,
+        role as Role,
+      );
+      const response: ApiResponse = { success: true, data: updated };
+      res.json(response);
+    } catch (error) {
+      next(error);
+    }
+  },
+);
+
+/** Remover miembro de la casa (no elimina la cuenta) */
+usersRouter.delete(
+  "/house/:houseId/members/:userId",
+  authenticate,
+  belongsToHouse("houseId"),
+  requirePermission("system", "deleteUsers"),
+  async (req, res, next) => {
+    try {
+      const { userId, houseId } = req.params;
+
+      // No se puede eliminar a uno mismo
+      if (userId === req.user!.userId) {
+        res.status(400).json({ error: "No puedes eliminarte a ti mismo" });
+        return;
+      }
+
+      await usersService.removeMember(userId as string, houseId as string);
+      const response: ApiResponse = {
+        success: true,
+        data: { message: "Miembro eliminado de la casa" },
+      };
+      res.json(response);
+    } catch (error) {
+      next(error);
+    }
+  },
+);
+
+// ══════════════════════════════════════════════
+// Invitation Management
+// ══════════════════════════════════════════════
+
+const inviteSchema = z.object({
+  name: z.string().min(2).max(100),
+  role: z
+    .enum(["member", "simplified", "external"])
+    .optional()
+    .default("member"),
+  tempPin: z.string().min(4).max(8),
+});
+
+/** Invitar nuevo miembro a la casa */
+usersRouter.post(
+  "/house/:houseId/invite",
+  authenticate,
+  belongsToHouse("houseId"),
+  requirePermission("system", "createUserOther"),
+  validate(inviteSchema),
+  async (req, res, next) => {
+    try {
+      const { houseId } = req.params;
+      const { name, role, tempPin } = req.body;
+
+      const result = await authService.inviteMember({
+        name,
+        houseId: houseId as string,
+        role: role as Role,
+        tempPin,
+        invitedBy: req.user!.userId,
+      });
+      const response: ApiResponse = { success: true, data: result };
+      res.status(201).json(response);
+    } catch (error) {
+      next(error);
+    }
+  },
+);

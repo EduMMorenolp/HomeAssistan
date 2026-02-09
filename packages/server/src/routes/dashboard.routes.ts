@@ -25,7 +25,8 @@ const updatePreferencesSchema = z.object({
 
 dashboardRouter.get("/stats", requirePermission("dashboard", "viewBasicStats"), async (req, res, next) => {
   try {
-    const data = await dashboardService.getDashboardStats(req.user!.houseId);
+    const { houseId, userId, role } = req.user!;
+    const data = await dashboardService.getDashboardStats(houseId, userId, role);
     const response: ApiResponse = { success: true, data };
     res.json(response);
   } catch (error) {

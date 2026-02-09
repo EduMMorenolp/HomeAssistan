@@ -8,7 +8,6 @@ import { validate } from "../middleware/validate";
 import {
   authenticate,
   authorize,
-  authorizeMin,
   belongsToHouse,
   requirePermission,
 } from "../middleware/auth";

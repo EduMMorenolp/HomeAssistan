@@ -3,10 +3,12 @@
 // ══════════════════════════════════════════════
 
 import { useAuthStore } from "@/stores/auth.store";
+import { usePermissions } from "@/hooks/usePermissions";
 import { cn } from "@/lib/utils";
 import { api } from "@/lib/api";
 import { useQuery } from "@tanstack/react-query";
 import type { DashboardStats, ApiResponse } from "@homeassistan/shared";
+import type { PermissionModule } from "@homeassistan/shared";
 import {
   MessageSquare,
   CheckSquare,
@@ -27,6 +29,7 @@ const moduleCards = [
     description: "Muro, chat y avisos",
     color: "bg-blue-500",
     lightBg: "bg-blue-50 dark:bg-blue-900/20",
+    module: "communication" as PermissionModule,
   },
   {
     to: "/tareas",
@@ -35,6 +38,7 @@ const moduleCards = [
     description: "Gestión y asignación",
     color: "bg-green-500",
     lightBg: "bg-green-50 dark:bg-green-900/20",
+    module: "tasks" as PermissionModule,
   },
   {
     to: "/calendario",
@@ -43,6 +47,7 @@ const moduleCards = [
     description: "Eventos y recordatorios",
     color: "bg-yellow-500",
     lightBg: "bg-yellow-50 dark:bg-yellow-900/20",
+    module: "calendar" as PermissionModule,
   },
   {
     to: "/finanzas",
@@ -51,6 +56,7 @@ const moduleCards = [
     description: "Gastos y compras",
     color: "bg-orange-500",
     lightBg: "bg-orange-50 dark:bg-orange-900/20",
+    module: "finance" as PermissionModule,
   },
   {
     to: "/salud",
@@ -59,6 +65,7 @@ const moduleCards = [
     description: "Medicamentos y rutinas",
     color: "bg-purple-500",
     lightBg: "bg-purple-50 dark:bg-purple-900/20",
+    module: "health" as PermissionModule,
   },
   {
     to: "/seguridad",
@@ -67,12 +74,17 @@ const moduleCards = [
     description: "Emergencias y accesos",
     color: "bg-red-500",
     lightBg: "bg-red-50 dark:bg-red-900/20",
+    module: "security" as PermissionModule,
   },
 ];
 
 export function DashboardPage() {
   const { user, house } = useAuthStore();
+  const { canAccessModule } = usePermissions();
   const navigate = useNavigate();
+
+  // Filtrar cards de módulos según permisos del rol
+  const visibleCards = moduleCards.filter((card) => canAccessModule(card.module));
 
   const { data: stats } = useQuery<DashboardStats>({
     queryKey: ["dashboard-stats"],
@@ -143,7 +155,7 @@ export function DashboardPage() {
           Módulos
         </h2>
         <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-          {moduleCards.map((card) => (
+          {visibleCards.map((card) => (
             <button
               key={card.to}
               onClick={() => navigate(card.to)}

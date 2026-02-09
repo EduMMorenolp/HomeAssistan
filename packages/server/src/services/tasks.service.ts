@@ -12,12 +12,13 @@ import {
   userPoints,
   users,
 } from "@homeassistan/database";
-import type { CreateTaskRequest, UpdateTaskRequest } from "@homeassistan/shared";
+import type { CreateTaskRequest, UpdateTaskRequest, Role } from "@homeassistan/shared";
+import { hasPermission } from "@homeassistan/shared";
 import { AppError } from "../middleware/error-handler";
 
 // ── CRUD Tareas ──────────────────────────────
 
-export async function getTasksByHouse(houseId: string) {
+export async function getTasksByHouse(houseId: string, userId?: string, role?: Role) {
   const rows = await db
     .select({
       id: tasks.id,
@@ -51,12 +52,21 @@ export async function getTasksByHouse(houseId: string) {
     .from(taskAssignments)
     .innerJoin(users, eq(taskAssignments.userId, users.id));
 
-  return rows.map((task) => ({
+  const enriched = rows.map((task) => ({
     ...task,
     assignees: allAssignments
       .filter((a) => a.taskId === task.id)
       .map((a) => ({ id: a.id, userId: a.userId, userName: a.userName })),
   }));
+
+  // Filtrar por rol: simplified/external solo ven tareas asignadas a ellos
+  if (role && userId && !hasPermission(role, "tasks", "deleteTasks")) {
+    return enriched.filter(
+      (t) => t.createdBy === userId || t.assignees.some((a) => a.userId === userId),
+    );
+  }
+
+  return enriched;
 }
 
 export async function getTaskById(taskId: string) {

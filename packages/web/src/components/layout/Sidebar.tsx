@@ -1,10 +1,12 @@
 // ══════════════════════════════════════════════
-// Sidebar Navigation - Responsive
+// Sidebar Navigation - Responsive + RBAC
 // ══════════════════════════════════════════════
 
 import { NavLink } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores/auth.store";
+import { usePermissions } from "@/hooks/usePermissions";
+import type { PermissionModule } from "@homeassistan/shared";
 import {
   Home,
   MessageSquare,
@@ -16,16 +18,25 @@ import {
   Settings,
   LogOut,
   X,
+  ShieldCheck,
 } from "lucide-react";
 
-const navItems = [
-  { to: "/dashboard", icon: Home, label: "Inicio" },
-  { to: "/comunicacion", icon: MessageSquare, label: "Comunicación" },
-  { to: "/tareas", icon: CheckSquare, label: "Tareas" },
-  { to: "/calendario", icon: Calendar, label: "Calendario" },
-  { to: "/finanzas", icon: Wallet, label: "Finanzas" },
-  { to: "/salud", icon: Heart, label: "Salud" },
-  { to: "/seguridad", icon: Shield, label: "Seguridad" },
+interface NavItem {
+  to: string;
+  icon: typeof Home;
+  label: string;
+  /** Módulo de permisos requerido (null = siempre visible) */
+  module: PermissionModule | null;
+}
+
+const navItems: NavItem[] = [
+  { to: "/dashboard", icon: Home, label: "Inicio", module: "dashboard" },
+  { to: "/comunicacion", icon: MessageSquare, label: "Comunicación", module: "communication" },
+  { to: "/tareas", icon: CheckSquare, label: "Tareas", module: "tasks" },
+  { to: "/calendario", icon: Calendar, label: "Calendario", module: "calendar" },
+  { to: "/finanzas", icon: Wallet, label: "Finanzas", module: "finance" },
+  { to: "/salud", icon: Heart, label: "Salud", module: "health" },
+  { to: "/seguridad", icon: Shield, label: "Seguridad", module: "security" },
 ];
 
 interface SidebarProps {
@@ -35,6 +46,12 @@ interface SidebarProps {
 
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const { house, logout } = useAuthStore();
+  const { canAccessModule, isAdmin } = usePermissions();
+
+  // Filtrar items de navegación según el rol del usuario
+  const visibleItems = navItems.filter(
+    (item) => item.module === null || canAccessModule(item.module),
+  );
 
   const sidebarContent = (
     <aside className="w-64 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 flex flex-col h-full">
@@ -63,7 +80,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
       {/* Navigation */}
       <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
-        {navItems.map((item) => (
+        {visibleItems.map((item) => (
           <NavLink
             key={item.to}
             to={item.to}
@@ -80,6 +97,24 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
             <span className="truncate">{item.label}</span>
           </NavLink>
         ))}
+
+        {/* Admin link — solo para admin */}
+        {isAdmin && (
+          <NavLink
+            to="/admin"
+            className={({ isActive }) =>
+              cn(
+                "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors mt-2 border-t border-slate-200 dark:border-slate-700 pt-3",
+                isActive
+                  ? "bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400"
+                  : "text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20",
+              )
+            }
+          >
+            <ShieldCheck className="w-5 h-5 shrink-0" />
+            <span className="truncate">Admin</span>
+          </NavLink>
+        )}
       </nav>
 
       {/* Footer */}

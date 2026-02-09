@@ -2,7 +2,7 @@
 // Users Service
 // ══════════════════════════════════════════════
 
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { db, users, houseMembers } from "@homeassistan/database";
 import { hashPin } from "./auth.service";
 import { AppError } from "../middleware/error-handler";
@@ -127,4 +127,62 @@ export async function changePin(id: string, currentPin: string, newPin: string) 
   // Hashear y guardar nuevo PIN
   const newPinHash = await hashPin(newPin);
   await db.update(users).set({ personalPinHash: newPinHash, updatedAt: new Date() }).where(eq(users.id, id));
+}
+
+// ── House Members Management ──────────────────
+
+/** Obtener miembros de una casa con info de usuario */
+export async function getHouseMembers(houseId: string) {
+  return db
+    .select({
+      userId: users.id,
+      name: users.name,
+      email: users.email,
+      avatar: users.avatar,
+      profileType: users.profileType,
+      role: houseMembers.role,
+      nickname: houseMembers.nickname,
+      joinedAt: houseMembers.joinedAt,
+    })
+    .from(houseMembers)
+    .innerJoin(users, eq(houseMembers.userId, users.id))
+    .where(eq(houseMembers.houseId, houseId))
+    .orderBy(houseMembers.joinedAt);
+}
+
+/** Cambiar rol de un miembro dentro de una casa */
+export async function updateMemberRole(
+  userId: string,
+  houseId: string,
+  newRole: Role,
+) {
+  const [updated] = await db
+    .update(houseMembers)
+    .set({ role: newRole })
+    .where(
+      and(eq(houseMembers.userId, userId), eq(houseMembers.houseId, houseId)),
+    )
+    .returning();
+
+  if (!updated) {
+    throw new AppError(404, "MEMBER_NOT_FOUND", "Miembro no encontrado en esta casa");
+  }
+
+  return updated;
+}
+
+/** Eliminar un miembro de una casa (no elimina el usuario) */
+export async function removeMember(userId: string, houseId: string) {
+  const [deleted] = await db
+    .delete(houseMembers)
+    .where(
+      and(eq(houseMembers.userId, userId), eq(houseMembers.houseId, houseId)),
+    )
+    .returning();
+
+  if (!deleted) {
+    throw new AppError(404, "MEMBER_NOT_FOUND", "Miembro no encontrado en esta casa");
+  }
+
+  return deleted;
 }

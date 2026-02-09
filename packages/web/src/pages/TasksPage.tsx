@@ -8,6 +8,7 @@ import { api } from "@/lib/api";
 import { useAuthStore } from "@/stores/auth.store";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { Can } from "@/components/auth/Can";
 import {
   Plus,
   CheckCircle2,
@@ -78,13 +79,15 @@ export function TasksPage() {
             Gestiona las tareas del hogar
           </p>
         </div>
-        <button
-          onClick={() => setShowForm(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm font-medium transition-colors self-start sm:self-auto"
-        >
-          <Plus className="w-4 h-4" />
-          Nueva tarea
-        </button>
+        <Can module="tasks" action="createOwn">
+          <button
+            onClick={() => setShowForm(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm font-medium transition-colors self-start sm:self-auto"
+          >
+            <Plus className="w-4 h-4" />
+            Nueva tarea
+          </button>
+        </Can>
       </div>
 
       {/* Tabs */}

@@ -4,8 +4,9 @@
 
 import bcrypt from "bcryptjs";
 import jwt, { type SignOptions } from "jsonwebtoken";
-import { eq } from "drizzle-orm";
+import { eq, and, inArray } from "drizzle-orm";
 import { db, houses, users, houseMembers, sessions } from "@homeassistan/database";
+import type { Role } from "@homeassistan/shared";
 import type {
   HouseSelectRequest,
   HouseSelectResponse,
@@ -38,21 +39,28 @@ export async function selectHouse(data: HouseSelectRequest): Promise<HouseSelect
     expiresIn: "10m",
   });
 
-  // Obtener miembros de la casa (sin mascotas, ellos no hacen login)
+  // Obtener miembros de la casa (sin mascotas, solo active/invited)
   const rawMembers = await db
     .select({
       id: users.id,
       name: users.name,
       avatar: users.avatar,
+      memberStatus: houseMembers.memberStatus,
     })
     .from(houseMembers)
     .innerJoin(users, eq(houseMembers.userId, users.id))
-    .where(eq(houseMembers.houseId, house.id));
+    .where(
+      and(
+        eq(houseMembers.houseId, house.id),
+        inArray(houseMembers.memberStatus, ["active", "invited"]),
+      ),
+    );
 
   const members = rawMembers.map((m) => ({
     id: m.id,
     name: m.name,
     avatar: m.avatar ?? undefined,
+    status: m.memberStatus as string,
   }));
 
   return {
@@ -92,11 +100,45 @@ export async function loginUser(data: UserLoginRequest): Promise<UserLoginRespon
   const [membership] = await db
     .select()
     .from(houseMembers)
-    .where(eq(houseMembers.userId, user.id))
+    .where(
+      and(
+        eq(houseMembers.userId, user.id),
+        eq(houseMembers.houseId, houseId),
+      ),
+    )
     .limit(1);
 
   if (!membership) {
     throw new AppError(403, "NOT_A_MEMBER", "No eres miembro de esta casa");
+  }
+
+  // Check member status
+  if (membership.memberStatus === "pending") {
+    throw new AppError(403, "PENDING_APPROVAL", "Tu solicitud de acceso está pendiente de aprobación");
+  }
+  if (membership.memberStatus === "suspended") {
+    throw new AppError(403, "SUSPENDED", "Tu acceso ha sido suspendido");
+  }
+
+  // If invited, require activation (temp PIN check)
+  if (membership.memberStatus === "invited") {
+    // Check if temp PIN matches instead of personal PIN
+    if (membership.tempPinHash) {
+      const tempValid = await bcrypt.compare(data.personalPin, membership.tempPinHash);
+      if (tempValid) {
+        // Return special response indicating activation needed
+        const activationToken = jwt.sign(
+          { userId: user.id, houseId, action: "activate" },
+          JWT_SECRET,
+          { expiresIn: "15m" },
+        );
+        throw new AppError(403, "ACTIVATION_REQUIRED", "Debes crear tu PIN personal", {
+          activationToken,
+          userName: user.name,
+        });
+      }
+    }
+    throw new AppError(401, "INVALID_PIN", "PIN incorrecto");
   }
 
   // Generar tokens
@@ -193,4 +235,242 @@ export async function hashPin(pin: string): Promise<string> {
 /** Helper: comparar PIN con hash */
 export async function comparePin(pin: string, hash: string): Promise<boolean> {
   return bcrypt.compare(pin, hash);
+}
+
+// ══════════════════════════════════════════════
+// Onboarding: Invitación + Auto-registro
+// ══════════════════════════════════════════════
+
+/** Invitar usuario: crear con temp PIN y status 'invited' */
+export async function inviteMember(data: {
+  name: string;
+  email?: string;
+  houseId: string;
+  role: Role;
+  invitedBy: string;
+  tempPin: string;
+}) {
+  const personalPinHash = await hashPin("0000"); // placeholder, user will set their own
+  const tempPinHash = await hashPin(data.tempPin);
+
+  const [user] = await db
+    .insert(users)
+    .values({
+      name: data.name,
+      email: data.email,
+      personalPinHash,
+      profileType: "power",
+    })
+    .returning({ id: users.id, name: users.name });
+
+  await db.insert(houseMembers).values({
+    houseId: data.houseId,
+    userId: user.id,
+    role: data.role,
+    memberStatus: "invited",
+    invitedBy: data.invitedBy,
+    tempPinHash,
+    tempPinExpiry: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+  });
+
+  return { userId: user.id, name: user.name, tempPin: data.tempPin };
+}
+
+/** Activar cuenta invitada: cambiar temp PIN por PIN personal */
+export async function activateAccount(data: {
+  activationToken: string;
+  newPin: string;
+}) {
+  let payload: { userId: string; houseId: string; action: string };
+  try {
+    payload = jwt.verify(data.activationToken, JWT_SECRET) as typeof payload;
+  } catch {
+    throw new AppError(401, "INVALID_TOKEN", "Token de activación inválido o expirado");
+  }
+
+  if (payload.action !== "activate") {
+    throw new AppError(400, "INVALID_ACTION", "Token inválido");
+  }
+
+  const newPinHash = await hashPin(data.newPin);
+
+  // Update user's personal PIN
+  await db
+    .update(users)
+    .set({ personalPinHash: newPinHash, updatedAt: new Date() })
+    .where(eq(users.id, payload.userId));
+
+  // Update member status to active, clear temp PIN
+  await db
+    .update(houseMembers)
+    .set({
+      memberStatus: "active",
+      tempPinHash: null,
+      tempPinExpiry: null,
+    })
+    .where(
+      and(
+        eq(houseMembers.userId, payload.userId),
+        eq(houseMembers.houseId, payload.houseId),
+      ),
+    );
+
+  // Get membership for token generation
+  const [membership] = await db
+    .select()
+    .from(houseMembers)
+    .where(
+      and(
+        eq(houseMembers.userId, payload.userId),
+        eq(houseMembers.houseId, payload.houseId),
+      ),
+    )
+    .limit(1);
+
+  const [user] = await db.select().from(users).where(eq(users.id, payload.userId)).limit(1);
+
+  // Generate login tokens
+  const tokenPayload: JwtPayload = {
+    userId: payload.userId,
+    houseId: payload.houseId,
+    role: membership.role,
+  };
+
+  const accessToken = jwt.sign(tokenPayload, JWT_SECRET, { expiresIn: "1h" } as SignOptions);
+  const refreshToken = jwt.sign(tokenPayload, JWT_SECRET, REFRESH_OPTS);
+
+  await db.insert(sessions).values({
+    userId: payload.userId,
+    houseId: payload.houseId,
+    refreshToken,
+    expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+  });
+
+  return {
+    accessToken,
+    refreshToken,
+    user: {
+      id: user.id,
+      name: user.name,
+      role: membership.role,
+      profileType: user.profileType,
+    },
+  };
+}
+
+/** Auto-registro: usuario solicita acceso a una casa */
+export async function selfRegister(data: {
+  name: string;
+  personalPin: string;
+  houseId: string;
+}) {
+  // Verify the house exists
+  const [house] = await db.select().from(houses).where(eq(houses.id, data.houseId)).limit(1);
+  if (!house) {
+    throw new AppError(404, "HOUSE_NOT_FOUND", "Casa no encontrada");
+  }
+
+  const pinHash = await hashPin(data.personalPin);
+
+  const [user] = await db
+    .insert(users)
+    .values({
+      name: data.name,
+      personalPinHash: pinHash,
+      profileType: "power",
+    })
+    .returning({ id: users.id, name: users.name });
+
+  await db.insert(houseMembers).values({
+    houseId: data.houseId,
+    userId: user.id,
+    role: "member",
+    memberStatus: "pending",
+  });
+
+  return { userId: user.id, name: user.name, status: "pending" };
+}
+
+/** Aprobar solicitud de acceso */
+export async function approveRequest(userId: string, houseId: string, approvedRole?: Role) {
+  const [membership] = await db
+    .select()
+    .from(houseMembers)
+    .where(
+      and(
+        eq(houseMembers.userId, userId),
+        eq(houseMembers.houseId, houseId),
+        eq(houseMembers.memberStatus, "pending"),
+      ),
+    )
+    .limit(1);
+
+  if (!membership) {
+    throw new AppError(404, "NOT_FOUND", "Solicitud no encontrada");
+  }
+
+  await db
+    .update(houseMembers)
+    .set({
+      memberStatus: "active",
+      role: approvedRole || membership.role,
+    })
+    .where(
+      and(
+        eq(houseMembers.userId, userId),
+        eq(houseMembers.houseId, houseId),
+      ),
+    );
+
+  return { userId, status: "active" };
+}
+
+/** Rechazar solicitud de acceso */
+export async function rejectRequest(userId: string, houseId: string) {
+  // Remove the pending membership
+  const [deleted] = await db
+    .delete(houseMembers)
+    .where(
+      and(
+        eq(houseMembers.userId, userId),
+        eq(houseMembers.houseId, houseId),
+        eq(houseMembers.memberStatus, "pending"),
+      ),
+    )
+    .returning();
+
+  if (!deleted) {
+    throw new AppError(404, "NOT_FOUND", "Solicitud no encontrada");
+  }
+
+  // Also delete user if they only had this membership
+  const otherMemberships = await db
+    .select()
+    .from(houseMembers)
+    .where(eq(houseMembers.userId, userId))
+    .limit(1);
+
+  if (otherMemberships.length === 0) {
+    await db.delete(users).where(eq(users.id, userId));
+  }
+}
+
+/** Obtener solicitudes pendientes de una casa */
+export async function getPendingRequests(houseId: string) {
+  return db
+    .select({
+      userId: users.id,
+      name: users.name,
+      email: users.email,
+      requestedAt: houseMembers.joinedAt,
+    })
+    .from(houseMembers)
+    .innerJoin(users, eq(houseMembers.userId, users.id))
+    .where(
+      and(
+        eq(houseMembers.houseId, houseId),
+        eq(houseMembers.memberStatus, "pending"),
+      ),
+    )
+    .orderBy(houseMembers.joinedAt);
 }

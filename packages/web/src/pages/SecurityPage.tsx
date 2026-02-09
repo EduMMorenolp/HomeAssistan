@@ -7,6 +7,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { usePermissions } from "@/hooks/usePermissions";
 import type {
   ApiResponse,
   EmergencyContactInfo,
@@ -34,13 +35,16 @@ type Tab = "contacts" | "vault" | "codes" | "logs";
 
 export function SecurityPage() {
   const [tab, setTab] = useState<Tab>("contacts");
+  const { can } = usePermissions();
 
-  const tabs: { key: Tab; label: string; icon: typeof Shield }[] = [
-    { key: "contacts", label: "Contactos", icon: Phone },
-    { key: "vault", label: "Bóveda", icon: Lock },
-    { key: "codes", label: "Códigos", icon: Key },
-    { key: "logs", label: "Accesos", icon: FileText },
+  const allTabs: { key: Tab; label: string; icon: typeof Shield; visible: boolean }[] = [
+    { key: "contacts", label: "Contactos", icon: Phone, visible: can("security", "viewContacts") },
+    { key: "vault", label: "Bóveda", icon: Lock, visible: can("security", "manageVault") },
+    { key: "codes", label: "Códigos", icon: Key, visible: can("security", "viewVisitorCodes") },
+    { key: "logs", label: "Accesos", icon: FileText, visible: can("security", "viewAccessLogs") },
   ];
+
+  const tabs = allTabs.filter((t) => t.visible);
 
   return (
     <div className="space-y-4 sm:space-y-6">

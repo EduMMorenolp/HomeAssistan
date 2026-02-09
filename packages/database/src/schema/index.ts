@@ -13,3 +13,4 @@ export * from "./communication";
 export * from "./calendar";
 export * from "./health";
 export * from "./security";
+export * from "./system-config";

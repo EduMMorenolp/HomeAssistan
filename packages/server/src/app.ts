@@ -17,6 +17,7 @@ import { communicationRouter } from "./routes/communication.routes";
 import { calendarRouter } from "./routes/calendar.routes";
 import { healthRouter } from "./routes/health.routes";
 import { securityRouter } from "./routes/security.routes";
+import { adminRouter } from "./routes/admin.routes";
 
 export const app: Express = express();
 
@@ -48,6 +49,7 @@ app.use("/api/communication", communicationRouter);
 app.use("/api/calendar", calendarRouter);
 app.use("/api/health", healthRouter);
 app.use("/api/security", securityRouter);
+app.use("/api/admin", adminRouter);
 
 // ── Error Handler (must be last) ─────────────
 app.use(errorHandler);

@@ -15,6 +15,7 @@ interface MemberInfo {
   id: string;
   name: string;
   avatar?: string;
+  status?: string;
 }
 
 export function UserLoginPage() {
@@ -40,7 +41,34 @@ export function UserLoginPage() {
       toast.success(`Bienvenido, ${data.user.name}`);
       navigate("/dashboard", { replace: true });
     },
-    onError: () => {
+    onError: (error: any) => {
+      const code = error.response?.data?.error?.code;
+      const details = error.response?.data?.error?.details;
+
+      if (code === "ACTIVATION_REQUIRED" && details?.activationToken) {
+        const member = members.find((m) => m.id === selectedUserId);
+        navigate("/auth/activate", {
+          state: {
+            activationToken: details.activationToken,
+            userName: member?.name,
+          },
+          replace: true,
+        });
+        return;
+      }
+
+      if (code === "PENDING_APPROVAL") {
+        toast.error("Tu solicitud aún está pendiente de aprobación");
+        setPin("");
+        return;
+      }
+
+      if (code === "SUSPENDED") {
+        toast.error("Tu cuenta ha sido suspendida");
+        setPin("");
+        return;
+      }
+
       toast.error("PIN incorrecto");
       setPin("");
     },
@@ -78,12 +106,17 @@ export function UserLoginPage() {
               setPin("");
             }}
             className={cn(
-              "flex flex-col items-center gap-1.5 sm:gap-2 p-3 sm:p-4 rounded-xl border transition-all",
+              "relative flex flex-col items-center gap-1.5 sm:gap-2 p-3 sm:p-4 rounded-xl border transition-all",
               selectedUserId === member.id
                 ? "border-blue-500 bg-blue-500/10"
                 : "border-white/10 hover:border-white/20 bg-white/5",
             )}
           >
+            {member.status === "invited" && (
+              <span className="absolute top-1.5 right-1.5 px-1.5 py-0.5 text-[10px] font-semibold rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                Nuevo
+              </span>
+            )}
             <div
               className={cn(
                 "w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center text-base sm:text-lg font-bold",
@@ -111,7 +144,11 @@ export function UserLoginPage() {
       {selectedUserId && (
         <div className="space-y-4">
           <div>
-            <label className="text-sm text-slate-400 mb-1.5 block">Tu PIN personal</label>
+            <label className="text-sm text-slate-400 mb-1.5 block">
+              {members.find((m) => m.id === selectedUserId)?.status === "invited"
+                ? "PIN temporal proporcionado"
+                : "Tu PIN personal"}
+            </label>
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
               <input

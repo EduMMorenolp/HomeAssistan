@@ -5,7 +5,7 @@
 import { Router, type Router as RouterType } from "express";
 import { z } from "zod";
 import { validate } from "../middleware/validate";
-import { authenticate, authorize, requirePermission } from "../middleware/auth";
+import { authenticate, requirePermission } from "../middleware/auth";
 import * as commService from "../services/communication.service";
 import type { ApiResponse } from "@homeassistan/shared";
 
@@ -104,7 +104,7 @@ communicationRouter.delete(
 
 communicationRouter.get("/messages", requirePermission("communication", "readLimitedHistory"), async (req, res, next) => {
   try {
-    const data = await commService.getMessages(req.user!.houseId);
+    const data = await commService.getMessages(req.user!.houseId, 100, req.user!.role);
     const response: ApiResponse = { success: true, data };
     res.json(response);
   } catch (error) {

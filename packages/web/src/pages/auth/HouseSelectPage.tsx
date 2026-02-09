@@ -122,6 +122,22 @@ export function HouseSelectPage() {
           >
             {selectMutation.isPending ? "Verificando..." : "Continuar"}
           </button>
+
+          {/* Self-register link */}
+          <button
+            onClick={() => {
+              const selectedHouse = houses?.find((h) => h.id === selectedId);
+              navigate("/auth/register", {
+                state: {
+                  houseId: selectedId,
+                  houseName: selectedHouse?.name,
+                },
+              });
+            }}
+            className="w-full text-center text-sm text-slate-400 hover:text-blue-400 transition-colors"
+          >
+            ¿No tienes cuenta? Solicitar acceso
+          </button>
         </div>
       )}
     </div>

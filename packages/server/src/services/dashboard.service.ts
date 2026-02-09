@@ -14,15 +14,17 @@ import {
   users,
   houseMembers,
 } from "@homeassistan/database";
-import type { UpdatePreferencesRequest } from "@homeassistan/shared";
+import type { UpdatePreferencesRequest, Role } from "@homeassistan/shared";
+import { hasPermission } from "@homeassistan/shared";
 
 // ── Stats ────────────────────────────────────
 
-export async function getDashboardStats(houseId: string) {
+export async function getDashboardStats(houseId: string, userId?: string, role?: Role) {
   const now = new Date();
   const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
+  // Basic stats for all roles
   const [pendingTasksR] = await db
     .select({ count: count() })
     .from(tasks)
@@ -38,10 +40,30 @@ export async function getDashboardStats(houseId: string) {
     .from(houseMembers)
     .where(eq(houseMembers.houseId, houseId));
 
-  const [monthExpR] = await db
-    .select({ total: sql<string>`COALESCE(SUM(${expenses.amount}), 0)` })
-    .from(expenses)
-    .where(and(eq(expenses.houseId, houseId), gte(expenses.expenseDate, startOfMonth)));
+  // Full stats: only for admin/responsible
+  const canViewFull = role ? hasPermission(role, "dashboard", "viewActivity") : true;
+
+  let monthExpenses = 0;
+  if (canViewFull) {
+    const [monthExpR] = await db
+      .select({ total: sql<string>`COALESCE(SUM(${expenses.amount}), 0)` })
+      .from(expenses)
+      .where(and(eq(expenses.houseId, houseId), gte(expenses.expenseDate, startOfMonth)));
+    monthExpenses = parseFloat(monthExpR?.total ?? "0");
+  } else if (userId) {
+    // member/simplified: only own expenses total
+    const [monthExpR] = await db
+      .select({ total: sql<string>`COALESCE(SUM(${expenses.amount}), 0)` })
+      .from(expenses)
+      .where(
+        and(
+          eq(expenses.houseId, houseId),
+          gte(expenses.expenseDate, startOfMonth),
+          eq(expenses.paidBy, userId),
+        ),
+      );
+    monthExpenses = parseFloat(monthExpR?.total ?? "0");
+  }
 
   const [lowStockR] = await db
     .select({ count: count() })
@@ -59,7 +81,7 @@ export async function getDashboardStats(houseId: string) {
     todayEvents: todayEventsR?.count ?? 0,
     unreadNotifications: 0,
     lowStockMeds: lowStockR?.count ?? 0,
-    monthExpenses: parseFloat(monthExpR?.total ?? "0"),
+    monthExpenses,
     houseMembersCount: membersR?.count ?? 0,
   };
 }

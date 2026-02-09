@@ -7,6 +7,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { usePermissions } from "@/hooks/usePermissions";
 import type {
   ApiResponse,
   AnnouncementInfo,
@@ -32,13 +33,16 @@ type Tab = "announcements" | "chat" | "notifications" | "panic";
 
 export function CommunicationPage() {
   const [tab, setTab] = useState<Tab>("announcements");
+  const { can } = usePermissions();
 
-  const tabs: { key: Tab; label: string; icon: typeof Megaphone }[] = [
-    { key: "announcements", label: "Anuncios", icon: Megaphone },
-    { key: "chat", label: "Chat", icon: MessageCircle },
-    { key: "notifications", label: "Notificaciones", icon: Bell },
-    { key: "panic", label: "Pánico", icon: AlertTriangle },
+  const allTabs: { key: Tab; label: string; icon: typeof Megaphone; visible: boolean }[] = [
+    { key: "announcements", label: "Anuncios", icon: Megaphone, visible: can("communication", "viewAnnouncements") },
+    { key: "chat", label: "Chat", icon: MessageCircle, visible: can("communication", "sendMessages") || can("communication", "readLimitedHistory") },
+    { key: "notifications", label: "Notificaciones", icon: Bell, visible: true },
+    { key: "panic", label: "Pánico", icon: AlertTriangle, visible: can("communication", "triggerPanic") },
   ];
+
+  const tabs = allTabs.filter((t) => t.visible);
 
   return (
     <div className="space-y-4 sm:space-y-6">

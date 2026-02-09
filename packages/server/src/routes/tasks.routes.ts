@@ -5,7 +5,7 @@
 import { Router, type Router as RouterType } from "express";
 import { z } from "zod";
 import { validate } from "../middleware/validate";
-import { authenticate, authorize, requirePermission } from "../middleware/auth";
+import { authenticate, requirePermission } from "../middleware/auth";
 import * as tasksService from "../services/tasks.service";
 import type { ApiResponse } from "@homeassistan/shared";
 
@@ -56,8 +56,8 @@ const rotationSchema = z.object({
 /** Listar tareas de la casa */
 tasksRouter.get("/", requirePermission("tasks", "viewTasks"), async (req, res, next) => {
   try {
-    const houseId = req.user!.houseId;
-    const data = await tasksService.getTasksByHouse(houseId);
+    const { houseId, userId, role } = req.user!;
+    const data = await tasksService.getTasksByHouse(houseId, userId, role);
     const response: ApiResponse = { success: true, data };
     res.json(response);
   } catch (error) {

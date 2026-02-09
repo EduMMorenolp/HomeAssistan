@@ -11,6 +11,13 @@ export const roleEnum = pgEnum("member_role", [
   "pet",
 ]);
 
+export const memberStatusEnum = pgEnum("member_status", [
+  "active",
+  "invited",
+  "pending",
+  "suspended",
+]);
+
 export const houseMembers = pgTable(
   "house_members",
   {
@@ -21,7 +28,11 @@ export const houseMembers = pgTable(
       .references(() => users.id, { onDelete: "cascade" })
       .notNull(),
     role: roleEnum("role").default("member").notNull(),
+    memberStatus: memberStatusEnum("member_status").default("active").notNull(),
     nickname: varchar("nickname", { length: 50 }),
+    invitedBy: uuid("invited_by").references(() => users.id),
+    tempPinHash: varchar("temp_pin_hash", { length: 255 }),
+    tempPinExpiry: timestamp("temp_pin_expiry", { withTimezone: true }),
     joinedAt: timestamp("joined_at", { withTimezone: true }).defaultNow().notNull(),
   },
   (table) => ({

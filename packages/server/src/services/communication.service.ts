@@ -11,7 +11,8 @@ import {
   panicPings,
   users,
 } from "@homeassistan/database";
-import type { CreateAnnouncementRequest, UpdateAnnouncementRequest } from "@homeassistan/shared";
+import type { CreateAnnouncementRequest, UpdateAnnouncementRequest, Role } from "@homeassistan/shared";
+import { hasPermission } from "@homeassistan/shared";
 import { AppError } from "../middleware/error-handler";
 
 // ══════════════════════════════════════════════
@@ -88,7 +89,18 @@ export async function deleteAnnouncement(id: string, houseId: string) {
 // MENSAJES (Chat)
 // ══════════════════════════════════════════════
 
-export async function getMessages(houseId: string, limit = 100) {
+export async function getMessages(houseId: string, limit = 100, role?: Role) {
+  // Simplified: limited history (20 messages), External: no history
+  let effectiveLimit = limit;
+  if (role) {
+    if (!hasPermission(role, "communication", "readLimitedHistory")) {
+      return []; // external con readLimitedHistory=false no ve nada
+    }
+    if (!hasPermission(role, "communication", "readFullHistory")) {
+      effectiveLimit = 20; // simplified: historial limitado
+    }
+  }
+
   return db
     .select({
       id: messages.id,
@@ -102,7 +114,7 @@ export async function getMessages(houseId: string, limit = 100) {
     .leftJoin(users, eq(messages.senderId, users.id))
     .where(eq(messages.houseId, houseId))
     .orderBy(desc(messages.createdAt))
-    .limit(limit);
+    .limit(effectiveLimit);
 }
 
 export async function createMessage(houseId: string, senderId: string, content: string) {
