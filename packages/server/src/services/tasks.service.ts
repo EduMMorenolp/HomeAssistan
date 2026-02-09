@@ -2,7 +2,7 @@
 // Tasks Service
 // ══════════════════════════════════════════════
 
-import { eq, and, desc, sql } from "drizzle-orm";
+import { eq, and, desc } from "drizzle-orm";
 import {
   db,
   tasks,

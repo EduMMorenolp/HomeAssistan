@@ -9,7 +9,6 @@ import {
   activityLogs,
   tasks,
   events,
-  notifications,
   medications,
   expenses,
   users,
@@ -22,7 +21,6 @@ import type { UpdatePreferencesRequest } from "@homeassistan/shared";
 export async function getDashboardStats(houseId: string) {
   const now = new Date();
   const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const endOfDay = new Date(startOfDay.getTime() + 86400000);
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
   const [pendingTasksR] = await db

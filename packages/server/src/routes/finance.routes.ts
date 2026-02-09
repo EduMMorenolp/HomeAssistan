@@ -5,7 +5,7 @@
 import { Router, type Router as RouterType } from "express";
 import { z } from "zod";
 import { validate } from "../middleware/validate";
-import { authenticate, authorize } from "../middleware/auth";
+import { authenticate } from "../middleware/auth";
 import * as financeService from "../services/finance.service";
 import type { ApiResponse } from "@homeassistan/shared";
 

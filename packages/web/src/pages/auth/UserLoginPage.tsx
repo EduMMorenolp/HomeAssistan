@@ -6,7 +6,7 @@ import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ArrowLeft, Lock, User } from "lucide-react";
+import { ArrowLeft, Lock } from "lucide-react";
 import { api } from "@/lib/api";
 import { useAuthStore } from "@/stores/auth.store";
 import { cn } from "@/lib/utils";
@@ -25,12 +25,6 @@ export function UserLoginPage() {
   const members: MemberInfo[] = location.state?.members || [];
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [pin, setPin] = useState("");
-
-  // Si no hay houseToken, volver a selección de casa
-  if (!houseToken) {
-    navigate("/auth/house", { replace: true });
-    return null;
-  }
 
   const loginMutation = useMutation({
     mutationFn: async () => {
@@ -51,6 +45,12 @@ export function UserLoginPage() {
       setPin("");
     },
   });
+
+  // Si no hay houseToken, volver a selección de casa
+  if (!houseToken) {
+    navigate("/auth/house", { replace: true });
+    return null;
+  }
 
   return (
     <div className="bg-white/10 backdrop-blur-lg rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-white/10">

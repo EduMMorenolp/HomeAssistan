@@ -5,7 +5,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
-import { useAuthStore } from "@/stores/auth.store";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import {
@@ -617,7 +616,8 @@ function ShoppingItemRow({
 
 function InventorySection() {
   const [showForm, setShowForm] = useState(false);
-  const [editingItem, setEditingItem] = useState<HouseholdItemInfo | null>(null);
+  // TODO: habilitar edición de ítems de inventario
+  // const [editingItem, setEditingItem] = useState<HouseholdItemInfo | null>(null);
   const queryClient = useQueryClient();
 
   const { data: items, isLoading } = useQuery({

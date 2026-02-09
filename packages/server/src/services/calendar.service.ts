@@ -2,15 +2,15 @@
 // Calendar Service
 // ══════════════════════════════════════════════
 
-import { eq, and, desc, gte, lte, between } from "drizzle-orm";
+import { eq, and, desc } from "drizzle-orm";
 import { db, events, eventAttendees, users } from "@homeassistan/database";
 import type { CreateEventRequest, UpdateEventRequest } from "@homeassistan/shared";
 import { AppError } from "../middleware/error-handler";
 
 // ── CRUD Eventos ─────────────────────────────
 
-export async function getEvents(houseId: string, from?: Date, to?: Date) {
-  let query = db
+export async function getEvents(houseId: string, _from?: Date, _to?: Date) {
+  const query = db
     .select({
       id: events.id,
       title: events.title,

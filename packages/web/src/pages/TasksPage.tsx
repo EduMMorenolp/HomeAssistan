@@ -28,6 +28,7 @@ import {
 import type {
   TaskInfo,
   TaskPriority,
+  TaskRecurrence,
   TaskStatus,
   CreateTaskRequest,
   UpdateTaskRequest,
@@ -581,7 +582,12 @@ function EditTaskModal({ task, onClose }: { task: TaskInfo; onClose: () => void 
               </label>
               <select
                 value={form.recurrence ?? "none"}
-                onChange={(e) => setForm({ ...form, recurrence: e.target.value as any })}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    recurrence: e.target.value as TaskRecurrence,
+                  })
+                }
                 className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-green-500"
               >
                 <option value="none">Sin repetir</option>
@@ -759,7 +765,12 @@ function CreateTaskModal({ onClose }: { onClose: () => void }) {
               </label>
               <select
                 value={form.recurrence}
-                onChange={(e) => setForm({ ...form, recurrence: e.target.value as any })}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    recurrence: e.target.value as TaskRecurrence,
+                  })
+                }
                 className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-green-500"
               >
                 <option value="none">Sin repetir</option>

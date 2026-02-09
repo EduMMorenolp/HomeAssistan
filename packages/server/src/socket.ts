@@ -17,12 +17,12 @@ export function setupSocketIO(httpServer: HttpServer) {
   });
 
   io.on("connection", (socket) => {
-    console.log(`[Socket] Connected: ${socket.id}`);
+    console.warn(`[Socket] Connected: ${socket.id}`);
 
     // Unirse a la sala de una casa
     socket.on("join:house", (houseId: string) => {
       socket.join(`house:${houseId}`);
-      console.log(`[Socket] ${socket.id} joined house:${houseId}`);
+      console.warn(`[Socket] ${socket.id} joined house:${houseId}`);
     });
 
     // Salir de la sala de una casa
@@ -46,7 +46,7 @@ export function setupSocketIO(httpServer: HttpServer) {
     });
 
     socket.on("disconnect", () => {
-      console.log(`[Socket] Disconnected: ${socket.id}`);
+      console.warn(`[Socket] Disconnected: ${socket.id}`);
     });
   });
 
