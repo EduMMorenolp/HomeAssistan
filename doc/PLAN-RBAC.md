@@ -11,7 +11,7 @@
 > | R2 — Permisos Granulares | ✅ Completado | 100% |
 > | R3 — UI Adaptativa | ✅ Completado | 100% |
 > | R4 — Panel Admin | ✅ Completado | 100% |
-> | R5 — Onboarding | ❌ Pendiente | 0% |
+> | R5 — Onboarding | ✅ Completado | 100% |
 > | R6 — Externos | ❌ Pendiente | 0% |
 > | R7 — Mascotas | ❌ Pendiente | 0% |
 
@@ -50,9 +50,9 @@
 | B7 | ~~Sin UI adaptativa por rol~~ | ✅ RESUELTO | Sidebar, páginas, FocusLayout adaptan UI según rol |
 | B8 | ~~Sin panel de Admin (`/admin`)~~ | ✅ RESUELTO | AdminPage con tabs: estadísticas, usuarios, logs, configuración |
 | B9 | ~~Sin gestión de usuarios en frontend~~ | ✅ RESUELTO | HouseMembersPage + AdminUsersPage con gestión completa |
-| B10 | **Sin flujo de onboarding (invitación/auto-registro)** | 🟡 MEDIA | Solo se crean usuarios vía seed o API directa |
+| B10 | ~~Sin flujo de onboarding (invitación/auto-registro)~~ | ✅ RESUELTO | Flujo completo: invitación con PIN temporal + auto-registro con aprobación |
 | B11 | **Sin gestión de externos (vigencia/módulos)** | 🟡 MEDIA | El rol `external` existe pero no tiene restricciones temporales |
-| B12 | **Sin estado "Pendiente de Aprobación"** | 🟡 MEDIA | No hay flujo de solicitar acceso → aprobar/rechazar |
+| B12 | ~~Sin estado "Pendiente de Aprobación"~~ | ✅ RESUELTO | memberStatus: active/invited/pending/suspended con flujo auto-registro → aprobar/rechazar |
 | B13 | **Sin ficha de mascotas** | 🟢 BAJA | El rol `pet` existe en el enum pero no hay tabla ni UI |
 | B14 | **Sin configuración global del sistema** | 🟢 BAJA | No hay settings como "Permitir crear casas" |
 
@@ -68,7 +68,7 @@
 | **R2** | Permisos Granulares por Módulo | ✅ Completado | ~20 | R1 |
 | **R3** | UI Adaptativa por Rol | ✅ Completado | ~10 | R1 |
 | **R4** | Panel Admin + Gestión de Usuarios | ✅ Completado | ~15 (nuevos) | R1, R2, R3 |
-| **R5** | Onboarding: Invitación + Auto-registro | 🟡 Media | ~10 | R4 |
+| **R5** | Onboarding: Invitación + Auto-registro | ✅ Completado | ~10 | R4 |
 | **R6** | Externos: Vigencia + Módulos | 🟡 Media | ~8 | R2, R5 |
 | **R7** | Mascotas + Config Global | 🟢 Baja | ~6 | R4 |
 
@@ -530,7 +530,7 @@ Ruta `/settings` — accesible por todos:
 
 ---
 
-## R5 — Onboarding: Invitación + Auto-registro
+## R5 — Onboarding: Invitación + Auto-registro ✅
 
 > **Objetivo:** Implementar los 2 métodos de ingreso de miembros (B10, B12)  
 > **Prioridad:** 🟡 MEDIA  
@@ -615,11 +615,11 @@ Flujo:
 
 ### Criterios de Aceptación R5
 
-- [ ] Un Responsable puede invitar con PIN temporal → el invitado cambia su PIN al primer login
-- [ ] Un visitante puede solicitar acceso → queda en "Pendiente" hasta que un Responsable aprueba
-- [ ] El Responsable ve las solicitudes pendientes y puede aprobar/rechazar
-- [ ] Un usuario pending NO puede acceder a ningún módulo
-- [ ] Las notificaciones llegan en tiempo real via WebSocket
+- [x] Un Responsable puede invitar con PIN temporal → el invitado cambia su PIN al primer login
+- [x] Un visitante puede solicitar acceso → queda en "Pendiente" hasta que un Responsable aprueba
+- [x] El Responsable ve las solicitudes pendientes y puede aprobar/rechazar
+- [x] Un usuario pending NO puede acceder a ningún módulo
+- [ ] Las notificaciones llegan en tiempo real via WebSocket (pendiente: requiere WebSocket — se implementará como mejora)
 
 ---
 
