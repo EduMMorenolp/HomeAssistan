@@ -5,7 +5,7 @@
 import { Router, type Router as RouterType } from "express";
 import { z } from "zod";
 import { validate } from "../middleware/validate";
-import { authenticate, authorize } from "../middleware/auth";
+import { authenticate, authorize, requirePermission } from "../middleware/auth";
 import * as commService from "../services/communication.service";
 import type { ApiResponse } from "@homeassistan/shared";
 
@@ -36,7 +36,7 @@ const sendMessageSchema = z.object({
 // ANUNCIOS
 // ══════════════════════════════════════════════
 
-communicationRouter.get("/announcements", async (req, res, next) => {
+communicationRouter.get("/announcements", requirePermission("communication", "viewAnnouncements"), async (req, res, next) => {
   try {
     const data = await commService.getAnnouncements(req.user!.houseId);
     const response: ApiResponse = { success: true, data };
@@ -48,7 +48,7 @@ communicationRouter.get("/announcements", async (req, res, next) => {
 
 communicationRouter.post(
   "/announcements",
-  authorize("admin", "responsible"),
+  requirePermission("communication", "manageAnnouncements"),
   validate(createAnnouncementSchema),
   async (req, res, next) => {
     try {
@@ -67,7 +67,7 @@ communicationRouter.post(
 
 communicationRouter.put(
   "/announcements/:id",
-  authorize("admin", "responsible"),
+  requirePermission("communication", "manageAnnouncements"),
   validate(updateAnnouncementSchema),
   async (req, res, next) => {
     try {
@@ -86,7 +86,7 @@ communicationRouter.put(
 
 communicationRouter.delete(
   "/announcements/:id",
-  authorize("admin", "responsible"),
+  requirePermission("communication", "manageAnnouncements"),
   async (req, res, next) => {
     try {
       await commService.deleteAnnouncement(req.params.id as string, req.user!.houseId);
@@ -102,7 +102,7 @@ communicationRouter.delete(
 // MENSAJES (Chat)
 // ══════════════════════════════════════════════
 
-communicationRouter.get("/messages", async (req, res, next) => {
+communicationRouter.get("/messages", requirePermission("communication", "readLimitedHistory"), async (req, res, next) => {
   try {
     const data = await commService.getMessages(req.user!.houseId);
     const response: ApiResponse = { success: true, data };
@@ -112,7 +112,7 @@ communicationRouter.get("/messages", async (req, res, next) => {
   }
 });
 
-communicationRouter.post("/messages", validate(sendMessageSchema), async (req, res, next) => {
+communicationRouter.post("/messages", requirePermission("communication", "sendMessages"), validate(sendMessageSchema), async (req, res, next) => {
   try {
     const data = await commService.createMessage(
       req.user!.houseId,
@@ -174,7 +174,7 @@ communicationRouter.put("/notifications/read-all", async (req, res, next) => {
 // PANIC PINGS
 // ══════════════════════════════════════════════
 
-communicationRouter.get("/panic", async (req, res, next) => {
+communicationRouter.get("/panic", requirePermission("communication", "triggerPanic"), async (req, res, next) => {
   try {
     const data = await commService.getPanicPings(req.user!.houseId);
     const response: ApiResponse = { success: true, data };
@@ -184,7 +184,7 @@ communicationRouter.get("/panic", async (req, res, next) => {
   }
 });
 
-communicationRouter.post("/panic", async (req, res, next) => {
+communicationRouter.post("/panic", requirePermission("communication", "triggerPanic"), async (req, res, next) => {
   try {
     const data = await commService.triggerPanic(
       req.user!.houseId,

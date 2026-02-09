@@ -108,3 +108,23 @@ export async function deleteUser(id: string) {
     throw new AppError(404, "USER_NOT_FOUND", "Usuario no encontrado");
   }
 }
+
+/** Cambiar PIN de un usuario */
+export async function changePin(id: string, currentPin: string, newPin: string) {
+  const [user] = await db.select().from(users).where(eq(users.id, id)).limit(1);
+
+  if (!user) {
+    throw new AppError(404, "USER_NOT_FOUND", "Usuario no encontrado");
+  }
+
+  // Verificar PIN actual
+  const { comparePin } = await import("./auth.service");
+  const valid = await comparePin(currentPin, user.personalPinHash);
+  if (!valid) {
+    throw new AppError(400, "INVALID_PIN", "El PIN actual es incorrecto");
+  }
+
+  // Hashear y guardar nuevo PIN
+  const newPinHash = await hashPin(newPin);
+  await db.update(users).set({ personalPinHash: newPinHash, updatedAt: new Date() }).where(eq(users.id, id));
+}

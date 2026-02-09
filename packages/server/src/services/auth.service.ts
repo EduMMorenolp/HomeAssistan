@@ -189,3 +189,8 @@ export async function logout(userId: string): Promise<void> {
 export async function hashPin(pin: string): Promise<string> {
   return bcrypt.hash(pin, SALT_ROUNDS);
 }
+
+/** Helper: comparar PIN con hash */
+export async function comparePin(pin: string, hash: string): Promise<boolean> {
+  return bcrypt.compare(pin, hash);
+}

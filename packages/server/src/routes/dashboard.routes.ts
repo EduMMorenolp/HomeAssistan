@@ -5,7 +5,7 @@
 import { Router, type Router as RouterType } from "express";
 import { z } from "zod";
 import { validate } from "../middleware/validate";
-import { authenticate } from "../middleware/auth";
+import { authenticate, requirePermission } from "../middleware/auth";
 import * as dashboardService from "../services/dashboard.service";
 import type { ApiResponse } from "@homeassistan/shared";
 
@@ -23,7 +23,7 @@ const updatePreferencesSchema = z.object({
 
 // ── Stats ────────────────────────────────────
 
-dashboardRouter.get("/stats", async (req, res, next) => {
+dashboardRouter.get("/stats", requirePermission("dashboard", "viewBasicStats"), async (req, res, next) => {
   try {
     const data = await dashboardService.getDashboardStats(req.user!.houseId);
     const response: ApiResponse = { success: true, data };
@@ -35,7 +35,7 @@ dashboardRouter.get("/stats", async (req, res, next) => {
 
 // ── Preferences ──────────────────────────────
 
-dashboardRouter.get("/preferences", async (req, res, next) => {
+dashboardRouter.get("/preferences", requirePermission("dashboard", "managePreferences"), async (req, res, next) => {
   try {
     const data = await dashboardService.getPreferences(req.user!.userId, req.user!.houseId);
     const response: ApiResponse = { success: true, data };
@@ -45,7 +45,7 @@ dashboardRouter.get("/preferences", async (req, res, next) => {
   }
 });
 
-dashboardRouter.put("/preferences", validate(updatePreferencesSchema), async (req, res, next) => {
+dashboardRouter.put("/preferences", requirePermission("dashboard", "managePreferences"), validate(updatePreferencesSchema), async (req, res, next) => {
   try {
     const data = await dashboardService.updatePreferences(
       req.user!.userId,
@@ -61,7 +61,7 @@ dashboardRouter.put("/preferences", validate(updatePreferencesSchema), async (re
 
 // ── Activity Log ─────────────────────────────
 
-dashboardRouter.get("/activity", async (req, res, next) => {
+dashboardRouter.get("/activity", requirePermission("dashboard", "viewActivity"), async (req, res, next) => {
   try {
     const data = await dashboardService.getActivityLog(req.user!.houseId);
     const response: ApiResponse = { success: true, data };

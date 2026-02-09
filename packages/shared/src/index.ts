@@ -3,6 +3,7 @@
 // ══════════════════════════════════════════════
 
 export * from "./types/roles";
+export * from "./types/permissions";
 export * from "./types/auth";
 export * from "./types/house";
 export * from "./types/user";

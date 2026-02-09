@@ -10,14 +10,21 @@ import type {
   CreateShoppingItemRequest,
   CreateHouseholdItemRequest,
   UpdateHouseholdItemRequest,
+  Role,
 } from "@homeassistan/shared";
+import { hasPermission } from "@homeassistan/shared";
 import { AppError } from "../middleware/error-handler";
 
 // ══════════════════════════════════════════════
 // GASTOS
 // ══════════════════════════════════════════════
 
-export async function getExpenses(houseId: string) {
+export async function getExpenses(houseId: string, userId: string, role: Role) {
+  const baseWhere = eq(expenses.houseId, houseId);
+  // admin/responsible ve todo, member/simplified ve solo sus gastos
+  const canViewGlobal = hasPermission(role, "finance", "viewGlobalBalance");
+  const whereClause = canViewGlobal ? baseWhere : and(baseWhere, eq(expenses.paidBy, userId));
+
   return db
     .select({
       id: expenses.id,
@@ -33,16 +40,21 @@ export async function getExpenses(houseId: string) {
     })
     .from(expenses)
     .leftJoin(users, eq(expenses.paidBy, users.id))
-    .where(eq(expenses.houseId, houseId))
+    .where(whereClause)
     .orderBy(desc(expenses.expenseDate));
 }
 
-export async function getExpenseSummary(houseId: string) {
+export async function getExpenseSummary(houseId: string, userId: string, role: Role) {
   const now = new Date();
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
   const startOfWeek = new Date(now);
   startOfWeek.setDate(now.getDate() - now.getDay());
   startOfWeek.setHours(0, 0, 0, 0);
+
+  const canViewGlobal = hasPermission(role, "finance", "viewGlobalBalance");
+  const baseFilter = canViewGlobal
+    ? eq(expenses.houseId, houseId)
+    : and(eq(expenses.houseId, houseId), eq(expenses.paidBy, userId));
 
   // Total del mes
   const [monthResult] = await db
@@ -50,7 +62,7 @@ export async function getExpenseSummary(houseId: string) {
       total: sql<string>`COALESCE(SUM(${expenses.amount}::numeric), 0)`,
     })
     .from(expenses)
-    .where(and(eq(expenses.houseId, houseId), gte(expenses.expenseDate, startOfMonth)));
+    .where(and(baseFilter, gte(expenses.expenseDate, startOfMonth)));
 
   // Total de la semana
   const [weekResult] = await db
@@ -58,7 +70,7 @@ export async function getExpenseSummary(houseId: string) {
       total: sql<string>`COALESCE(SUM(${expenses.amount}::numeric), 0)`,
     })
     .from(expenses)
-    .where(and(eq(expenses.houseId, houseId), gte(expenses.expenseDate, startOfWeek)));
+    .where(and(baseFilter, gte(expenses.expenseDate, startOfWeek)));
 
   // Por categoría (mes actual)
   const byCategory = await db
@@ -67,7 +79,7 @@ export async function getExpenseSummary(houseId: string) {
       total: sql<string>`SUM(${expenses.amount}::numeric)`,
     })
     .from(expenses)
-    .where(and(eq(expenses.houseId, houseId), gte(expenses.expenseDate, startOfMonth)))
+    .where(and(baseFilter, gte(expenses.expenseDate, startOfMonth)))
     .groupBy(expenses.category)
     .orderBy(desc(sql`SUM(${expenses.amount}::numeric)`));
 
@@ -85,7 +97,7 @@ export async function getExpenseSummary(houseId: string) {
     })
     .from(expenses)
     .leftJoin(users, eq(expenses.paidBy, users.id))
-    .where(eq(expenses.houseId, houseId))
+    .where(baseFilter)
     .orderBy(desc(expenses.expenseDate))
     .limit(5);
 

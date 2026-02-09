@@ -5,7 +5,7 @@
 import { Router, type Router as RouterType } from "express";
 import { z } from "zod";
 import { validate } from "../middleware/validate";
-import { authenticate, authorize } from "../middleware/auth";
+import { authenticate, authorize, requirePermission } from "../middleware/auth";
 import * as tasksService from "../services/tasks.service";
 import type { ApiResponse } from "@homeassistan/shared";
 
@@ -54,7 +54,7 @@ const rotationSchema = z.object({
 // ── Endpoints ────────────────────────────────
 
 /** Listar tareas de la casa */
-tasksRouter.get("/", async (req, res, next) => {
+tasksRouter.get("/", requirePermission("tasks", "viewTasks"), async (req, res, next) => {
   try {
     const houseId = req.user!.houseId;
     const data = await tasksService.getTasksByHouse(houseId);
@@ -66,7 +66,7 @@ tasksRouter.get("/", async (req, res, next) => {
 });
 
 /** Obtener tarea por ID */
-tasksRouter.get("/:id", async (req, res, next) => {
+tasksRouter.get("/:id", requirePermission("tasks", "viewTasks"), async (req, res, next) => {
   try {
     const data = await tasksService.getTaskById(req.params.id as string);
     const response: ApiResponse = { success: true, data };
@@ -76,8 +76,8 @@ tasksRouter.get("/:id", async (req, res, next) => {
   }
 });
 
-/** Crear tarea */
-tasksRouter.post("/", validate(createTaskSchema), async (req, res, next) => {
+/** Crear tarea (admin/resp: asignar a cualquiera, member/simplified: solo propias) */
+tasksRouter.post("/", requirePermission("tasks", "createOwn"), validate(createTaskSchema), async (req, res, next) => {
   try {
     const data = await tasksService.createTask(req.user!.houseId, req.user!.userId, req.body);
     const response: ApiResponse = { success: true, data };
@@ -87,8 +87,8 @@ tasksRouter.post("/", validate(createTaskSchema), async (req, res, next) => {
   }
 });
 
-/** Actualizar tarea */
-tasksRouter.patch("/:id", validate(updateTaskSchema), async (req, res, next) => {
+/** Actualizar tarea (admin/resp o creador) */
+tasksRouter.patch("/:id", requirePermission("tasks", "createOwn"), validate(updateTaskSchema), async (req, res, next) => {
   try {
     const data = await tasksService.updateTask(req.params.id as string, req.body);
     const response: ApiResponse = { success: true, data };
@@ -98,8 +98,8 @@ tasksRouter.patch("/:id", validate(updateTaskSchema), async (req, res, next) => 
   }
 });
 
-/** Eliminar tarea */
-tasksRouter.delete("/:id", authorize("admin", "responsible"), async (req, res, next) => {
+/** Eliminar tarea (admin/resp) */
+tasksRouter.delete("/:id", requirePermission("tasks", "deleteTasks"), async (req, res, next) => {
   try {
     await tasksService.deleteTask(req.params.id as string);
     const response: ApiResponse = {
@@ -112,8 +112,8 @@ tasksRouter.delete("/:id", authorize("admin", "responsible"), async (req, res, n
   }
 });
 
-/** Asignar usuarios a tarea */
-tasksRouter.post("/:id/assign", validate(assignSchema), async (req, res, next) => {
+/** Asignar usuarios a tarea (admin/resp) */
+tasksRouter.post("/:id/assign", requirePermission("tasks", "createAndAssign"), validate(assignSchema), async (req, res, next) => {
   try {
     const data = await tasksService.assignTask(req.params.id as string, req.body.userIds);
     const response: ApiResponse = { success: true, data };
@@ -123,8 +123,8 @@ tasksRouter.post("/:id/assign", validate(assignSchema), async (req, res, next) =
   }
 });
 
-/** Completar tarea */
-tasksRouter.post("/:id/complete", validate(completeSchema), async (req, res, next) => {
+/** Completar tarea (todos los roles activos) */
+tasksRouter.post("/:id/complete", requirePermission("tasks", "markComplete"), validate(completeSchema), async (req, res, next) => {
   try {
     const data = await tasksService.completeTask(
       req.params.id as string,
@@ -138,10 +138,10 @@ tasksRouter.post("/:id/complete", validate(completeSchema), async (req, res, nex
   }
 });
 
-/** Configurar rotación */
+/** Configurar rotación (admin/resp) */
 tasksRouter.post(
   "/:id/rotation",
-  authorize("admin", "responsible"),
+  requirePermission("tasks", "configureRotation"),
   validate(rotationSchema),
   async (req, res, next) => {
     try {
@@ -159,7 +159,7 @@ tasksRouter.post(
 );
 
 /** Rankings de gamificación */
-tasksRouter.get("/gamification/rankings", async (req, res, next) => {
+tasksRouter.get("/gamification/rankings", requirePermission("tasks", "viewTasks"), async (req, res, next) => {
   try {
     const data = await tasksService.getRankings(req.user!.houseId);
     const response: ApiResponse = { success: true, data };
@@ -170,7 +170,7 @@ tasksRouter.get("/gamification/rankings", async (req, res, next) => {
 });
 
 /** Historial de completados */
-tasksRouter.get("/gamification/history", async (req, res, next) => {
+tasksRouter.get("/gamification/history", requirePermission("tasks", "viewTasks"), async (req, res, next) => {
   try {
     const data = await tasksService.getTaskHistory(req.user!.houseId);
     const response: ApiResponse = { success: true, data };

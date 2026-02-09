@@ -5,7 +5,13 @@
 import { Router, type Router as RouterType } from "express";
 import { z } from "zod";
 import { validate } from "../middleware/validate";
-import { authenticate, authorize } from "../middleware/auth";
+import {
+  authenticate,
+  authorize,
+  authorizeMin,
+  belongsToHouse,
+  requirePermission,
+} from "../middleware/auth";
 import * as housesService from "../services/houses.service";
 import type { ApiResponse } from "@homeassistan/shared";
 
@@ -27,7 +33,7 @@ const updateHouseSchema = z.object({
 
 // ── Endpoints ────────────────────────────────
 
-/** Listar todas las casas (para pantalla de selección) */
+/** Listar todas las casas (para pantalla de selección — público) */
 housesRouter.get("/", async (_req, res, next) => {
   try {
     const houses = await housesService.getAllHouses();
@@ -49,22 +55,29 @@ housesRouter.get("/:id", authenticate, async (req, res, next) => {
   }
 });
 
-/** Crear una nueva casa (solo primera vez o admin) */
-housesRouter.post("/", validate(createHouseSchema), async (req, res, next) => {
-  try {
-    const house = await housesService.createHouse(req.body);
-    const response: ApiResponse = { success: true, data: house };
-    res.status(201).json(response);
-  } catch (error) {
-    next(error);
-  }
-});
+/** Crear una nueva casa (solo admin o responsible) */
+housesRouter.post(
+  "/",
+  authenticate,
+  requirePermission("system", "createHouse"),
+  validate(createHouseSchema),
+  async (req, res, next) => {
+    try {
+      const house = await housesService.createHouse(req.body);
+      const response: ApiResponse = { success: true, data: house };
+      res.status(201).json(response);
+    } catch (error) {
+      next(error);
+    }
+  },
+);
 
-/** Actualizar casa */
+/** Actualizar casa (admin o responsible de la casa) */
 housesRouter.patch(
   "/:id",
   authenticate,
-  authorize("admin"),
+  requirePermission("system", "editHouseConfig"),
+  belongsToHouse("id"),
   validate(updateHouseSchema),
   async (req, res, next) => {
     try {
@@ -77,7 +90,7 @@ housesRouter.patch(
   },
 );
 
-/** Eliminar casa */
+/** Eliminar casa (solo admin) */
 housesRouter.delete("/:id", authenticate, authorize("admin"), async (req, res, next) => {
   try {
     await housesService.deleteHouse(req.params.id as string);

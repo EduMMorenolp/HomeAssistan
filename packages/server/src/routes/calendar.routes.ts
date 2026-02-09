@@ -5,7 +5,7 @@
 import { Router, type Router as RouterType } from "express";
 import { z } from "zod";
 import { validate } from "../middleware/validate";
-import { authenticate } from "../middleware/auth";
+import { authenticate, requirePermission } from "../middleware/auth";
 import * as calendarService from "../services/calendar.service";
 import type { ApiResponse } from "@homeassistan/shared";
 
@@ -49,7 +49,7 @@ const respondSchema = z.object({
 
 // ── Routes ───────────────────────────────────
 
-calendarRouter.get("/", async (req, res, next) => {
+calendarRouter.get("/", requirePermission("calendar", "viewEvents"), async (req, res, next) => {
   try {
     const data = await calendarService.getEvents(req.user!.houseId);
     const response: ApiResponse = { success: true, data };
@@ -59,9 +59,9 @@ calendarRouter.get("/", async (req, res, next) => {
   }
 });
 
-calendarRouter.get("/:id", async (req, res, next) => {
+calendarRouter.get("/:id", requirePermission("calendar", "viewEvents"), async (req, res, next) => {
   try {
-    const data = await calendarService.getEventById(req.params.id, req.user!.houseId);
+    const data = await calendarService.getEventById(req.params.id as string, req.user!.houseId);
     const response: ApiResponse = { success: true, data };
     res.json(response);
   } catch (error) {
@@ -69,7 +69,7 @@ calendarRouter.get("/:id", async (req, res, next) => {
   }
 });
 
-calendarRouter.post("/", validate(createEventSchema), async (req, res, next) => {
+calendarRouter.post("/", requirePermission("calendar", "createEvent"), validate(createEventSchema), async (req, res, next) => {
   try {
     const data = await calendarService.createEvent(req.user!.houseId, req.user!.userId, req.body);
     const response: ApiResponse = { success: true, data };
@@ -79,7 +79,7 @@ calendarRouter.post("/", validate(createEventSchema), async (req, res, next) => 
   }
 });
 
-calendarRouter.put("/:id", validate(updateEventSchema), async (req, res, next) => {
+calendarRouter.put("/:id", requirePermission("calendar", "editEvent"), validate(updateEventSchema), async (req, res, next) => {
   try {
     const data = await calendarService.updateEvent(
       req.params.id as string,
@@ -93,7 +93,7 @@ calendarRouter.put("/:id", validate(updateEventSchema), async (req, res, next) =
   }
 });
 
-calendarRouter.delete("/:id", async (req, res, next) => {
+calendarRouter.delete("/:id", requirePermission("calendar", "deleteEvent"), async (req, res, next) => {
   try {
     await calendarService.deleteEvent(req.params.id as string, req.user!.houseId);
     const response: ApiResponse = { success: true, data: null };

@@ -5,7 +5,7 @@
 import { Router, type Router as RouterType } from "express";
 import { z } from "zod";
 import { validate } from "../middleware/validate";
-import { authenticate } from "../middleware/auth";
+import { authenticate, requirePermission } from "../middleware/auth";
 import * as financeService from "../services/finance.service";
 import type { ApiResponse } from "@homeassistan/shared";
 
@@ -87,10 +87,10 @@ const updateInventorySchema = z.object({
 // GASTOS
 // ══════════════════════════════════════════════
 
-/** Listar gastos */
-financeRouter.get("/expenses", async (req, res, next) => {
+/** Listar gastos (admin/resp: global, member: propios, simplified: propios lectura, external: sin acceso) */
+financeRouter.get("/expenses", requirePermission("finance", "viewOwnExpenses"), async (req, res, next) => {
   try {
-    const data = await financeService.getExpenses(req.user!.houseId);
+    const data = await financeService.getExpenses(req.user!.houseId, req.user!.userId, req.user!.role);
     const response: ApiResponse = { success: true, data };
     res.json(response);
   } catch (error) {
@@ -98,10 +98,10 @@ financeRouter.get("/expenses", async (req, res, next) => {
   }
 });
 
-/** Resumen de gastos */
-financeRouter.get("/expenses/summary", async (req, res, next) => {
+/** Resumen de gastos (admin/resp: balance global, otros: resumen propio) */
+financeRouter.get("/expenses/summary", requirePermission("finance", "viewOwnExpenses"), async (req, res, next) => {
   try {
-    const data = await financeService.getExpenseSummary(req.user!.houseId);
+    const data = await financeService.getExpenseSummary(req.user!.houseId, req.user!.userId, req.user!.role);
     const response: ApiResponse = { success: true, data };
     res.json(response);
   } catch (error) {
@@ -109,8 +109,8 @@ financeRouter.get("/expenses/summary", async (req, res, next) => {
   }
 });
 
-/** Crear gasto */
-financeRouter.post("/expenses", validate(createExpenseSchema), async (req, res, next) => {
+/** Crear gasto (admin/resp/member) */
+financeRouter.post("/expenses", requirePermission("finance", "addExpense"), validate(createExpenseSchema), async (req, res, next) => {
   try {
     const data = await financeService.createExpense(req.user!.houseId, req.user!.userId, req.body);
     const response: ApiResponse = { success: true, data };
@@ -120,8 +120,8 @@ financeRouter.post("/expenses", validate(createExpenseSchema), async (req, res, 
   }
 });
 
-/** Actualizar gasto */
-financeRouter.patch("/expenses/:id", validate(updateExpenseSchema), async (req, res, next) => {
+/** Actualizar gasto (admin/resp) */
+financeRouter.patch("/expenses/:id", requirePermission("finance", "editExpense"), validate(updateExpenseSchema), async (req, res, next) => {
   try {
     const data = await financeService.updateExpense(req.params.id as string, req.body);
     const response: ApiResponse = { success: true, data };
@@ -131,8 +131,8 @@ financeRouter.patch("/expenses/:id", validate(updateExpenseSchema), async (req, 
   }
 });
 
-/** Eliminar gasto */
-financeRouter.delete("/expenses/:id", async (req, res, next) => {
+/** Eliminar gasto (admin/resp) */
+financeRouter.delete("/expenses/:id", requirePermission("finance", "deleteExpense"), async (req, res, next) => {
   try {
     await financeService.deleteExpense(req.params.id as string);
     const response: ApiResponse = {
@@ -149,8 +149,8 @@ financeRouter.delete("/expenses/:id", async (req, res, next) => {
 // LISTA DE COMPRAS
 // ══════════════════════════════════════════════
 
-/** Listar compras */
-financeRouter.get("/shopping", async (req, res, next) => {
+/** Listar compras (admin/resp/member) */
+financeRouter.get("/shopping", requirePermission("finance", "manageShopping"), async (req, res, next) => {
   try {
     const data = await financeService.getShoppingList(req.user!.houseId);
     const response: ApiResponse = { success: true, data };
@@ -160,8 +160,8 @@ financeRouter.get("/shopping", async (req, res, next) => {
   }
 });
 
-/** Añadir artículo */
-financeRouter.post("/shopping", validate(createShoppingSchema), async (req, res, next) => {
+/** Añadir artículo (admin/resp/member) */
+financeRouter.post("/shopping", requirePermission("finance", "manageShopping"), validate(createShoppingSchema), async (req, res, next) => {
   try {
     const data = await financeService.addShoppingItem(
       req.user!.houseId,
@@ -175,8 +175,8 @@ financeRouter.post("/shopping", validate(createShoppingSchema), async (req, res,
   }
 });
 
-/** Marcar/desmarcar como comprado */
-financeRouter.patch("/shopping/:id/toggle", async (req, res, next) => {
+/** Marcar/desmarcar como comprado (admin/resp/member) */
+financeRouter.patch("/shopping/:id/toggle", requirePermission("finance", "manageShopping"), async (req, res, next) => {
   try {
     const data = await financeService.toggleShoppingItem(req.params.id as string, req.user!.userId);
     const response: ApiResponse = { success: true, data };
@@ -186,8 +186,8 @@ financeRouter.patch("/shopping/:id/toggle", async (req, res, next) => {
   }
 });
 
-/** Eliminar artículo */
-financeRouter.delete("/shopping/:id", async (req, res, next) => {
+/** Eliminar artículo (admin/resp/member) */
+financeRouter.delete("/shopping/:id", requirePermission("finance", "manageShopping"), async (req, res, next) => {
   try {
     await financeService.deleteShoppingItem(req.params.id as string);
     const response: ApiResponse = {
@@ -200,8 +200,8 @@ financeRouter.delete("/shopping/:id", async (req, res, next) => {
   }
 });
 
-/** Limpiar comprados */
-financeRouter.delete("/shopping/clear/purchased", async (req, res, next) => {
+/** Limpiar comprados (admin/resp/member) */
+financeRouter.delete("/shopping/clear/purchased", requirePermission("finance", "manageShopping"), async (req, res, next) => {
   try {
     await financeService.clearPurchasedItems(req.user!.houseId);
     const response: ApiResponse = {
@@ -218,8 +218,8 @@ financeRouter.delete("/shopping/clear/purchased", async (req, res, next) => {
 // INVENTARIO
 // ══════════════════════════════════════════════
 
-/** Listar inventario */
-financeRouter.get("/inventory", async (req, res, next) => {
+/** Listar inventario (admin/resp/member) */
+financeRouter.get("/inventory", requirePermission("finance", "manageInventory"), async (req, res, next) => {
   try {
     const data = await financeService.getInventory(req.user!.houseId);
     const response: ApiResponse = { success: true, data };
@@ -229,8 +229,8 @@ financeRouter.get("/inventory", async (req, res, next) => {
   }
 });
 
-/** Crear artículo de inventario */
-financeRouter.post("/inventory", validate(createInventorySchema), async (req, res, next) => {
+/** Crear artículo de inventario (admin/resp/member) */
+financeRouter.post("/inventory", requirePermission("finance", "manageInventory"), validate(createInventorySchema), async (req, res, next) => {
   try {
     const data = await financeService.createInventoryItem(req.user!.houseId, req.body);
     const response: ApiResponse = { success: true, data };
@@ -240,8 +240,8 @@ financeRouter.post("/inventory", validate(createInventorySchema), async (req, re
   }
 });
 
-/** Actualizar artículo de inventario */
-financeRouter.patch("/inventory/:id", validate(updateInventorySchema), async (req, res, next) => {
+/** Actualizar artículo de inventario (admin/resp/member) */
+financeRouter.patch("/inventory/:id", requirePermission("finance", "manageInventory"), validate(updateInventorySchema), async (req, res, next) => {
   try {
     const data = await financeService.updateInventoryItem(req.params.id as string, req.body);
     const response: ApiResponse = { success: true, data };
@@ -251,8 +251,8 @@ financeRouter.patch("/inventory/:id", validate(updateInventorySchema), async (re
   }
 });
 
-/** Eliminar artículo de inventario */
-financeRouter.delete("/inventory/:id", async (req, res, next) => {
+/** Eliminar artículo de inventario (admin/resp/member) */
+financeRouter.delete("/inventory/:id", requirePermission("finance", "manageInventory"), async (req, res, next) => {
   try {
     await financeService.deleteInventoryItem(req.params.id as string);
     const response: ApiResponse = {

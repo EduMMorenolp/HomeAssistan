@@ -5,7 +5,7 @@
 import { Router, type Router as RouterType } from "express";
 import { z } from "zod";
 import { validate } from "../middleware/validate";
-import { authenticate } from "../middleware/auth";
+import { authenticate, requirePermission } from "../middleware/auth";
 import * as healthService from "../services/health.service";
 import type { ApiResponse } from "@homeassistan/shared";
 
@@ -72,7 +72,7 @@ const createRoutineSchema = z.object({
 // PERFILES DE SALUD
 // ══════════════════════════════════════════════
 
-healthRouter.get("/profiles", async (req, res, next) => {
+healthRouter.get("/profiles", requirePermission("health", "viewProfiles"), async (req, res, next) => {
   try {
     const data = await healthService.getHealthProfiles(req.user!.houseId);
     const response: ApiResponse = { success: true, data };
@@ -82,7 +82,7 @@ healthRouter.get("/profiles", async (req, res, next) => {
   }
 });
 
-healthRouter.put("/profiles", validate(upsertProfileSchema), async (req, res, next) => {
+healthRouter.put("/profiles", requirePermission("health", "editOwnProfile"), validate(upsertProfileSchema), async (req, res, next) => {
   try {
     const data = await healthService.upsertHealthProfile(
       req.user!.userId,
@@ -100,7 +100,7 @@ healthRouter.put("/profiles", validate(upsertProfileSchema), async (req, res, ne
 // MEDICAMENTOS
 // ══════════════════════════════════════════════
 
-healthRouter.get("/medications", async (req, res, next) => {
+healthRouter.get("/medications", requirePermission("health", "viewMedications"), async (req, res, next) => {
   try {
     const data = await healthService.getMedications(req.user!.houseId);
     const response: ApiResponse = { success: true, data };
@@ -110,7 +110,7 @@ healthRouter.get("/medications", async (req, res, next) => {
   }
 });
 
-healthRouter.post("/medications", validate(createMedicationSchema), async (req, res, next) => {
+healthRouter.post("/medications", requirePermission("health", "manageMedications"), validate(createMedicationSchema), async (req, res, next) => {
   try {
     const data = await healthService.createMedication(req.user!.houseId, req.body);
     const response: ApiResponse = { success: true, data };
@@ -120,7 +120,7 @@ healthRouter.post("/medications", validate(createMedicationSchema), async (req, 
   }
 });
 
-healthRouter.put("/medications/:id", validate(updateMedicationSchema), async (req, res, next) => {
+healthRouter.put("/medications/:id", requirePermission("health", "manageMedications"), validate(updateMedicationSchema), async (req, res, next) => {
   try {
     const data = await healthService.updateMedication(
       req.params.id as string,
@@ -134,7 +134,7 @@ healthRouter.put("/medications/:id", validate(updateMedicationSchema), async (re
   }
 });
 
-healthRouter.delete("/medications/:id", async (req, res, next) => {
+healthRouter.delete("/medications/:id", requirePermission("health", "manageMedications"), async (req, res, next) => {
   try {
     await healthService.deleteMedication(req.params.id as string, req.user!.houseId);
     const response: ApiResponse = { success: true, data: null };
@@ -146,7 +146,7 @@ healthRouter.delete("/medications/:id", async (req, res, next) => {
 
 // ── Medication Logs ──────────────────────────
 
-healthRouter.post("/medications/log", validate(logMedicationSchema), async (req, res, next) => {
+healthRouter.post("/medications/log", requirePermission("health", "logMedication"), validate(logMedicationSchema), async (req, res, next) => {
   try {
     const data = await healthService.logMedication(req.user!.userId, req.body);
     const response: ApiResponse = { success: true, data };
@@ -156,9 +156,9 @@ healthRouter.post("/medications/log", validate(logMedicationSchema), async (req,
   }
 });
 
-healthRouter.get("/medications/:id/logs", async (req, res, next) => {
+healthRouter.get("/medications/:id/logs", requirePermission("health", "viewMedications"), async (req, res, next) => {
   try {
-    const data = await healthService.getMedicationLogs(req.params.id);
+    const data = await healthService.getMedicationLogs(req.params.id as string);
     const response: ApiResponse = { success: true, data };
     res.json(response);
   } catch (error) {
@@ -170,7 +170,7 @@ healthRouter.get("/medications/:id/logs", async (req, res, next) => {
 // RUTINAS DE SALUD
 // ══════════════════════════════════════════════
 
-healthRouter.get("/routines", async (req, res, next) => {
+healthRouter.get("/routines", requirePermission("health", "viewRoutines"), async (req, res, next) => {
   try {
     const data = await healthService.getHealthRoutines(req.user!.houseId);
     const response: ApiResponse = { success: true, data };
@@ -180,7 +180,7 @@ healthRouter.get("/routines", async (req, res, next) => {
   }
 });
 
-healthRouter.post("/routines", validate(createRoutineSchema), async (req, res, next) => {
+healthRouter.post("/routines", requirePermission("health", "manageRoutines"), validate(createRoutineSchema), async (req, res, next) => {
   try {
     const data = await healthService.createHealthRoutine(req.user!.houseId, req.body);
     const response: ApiResponse = { success: true, data };
@@ -190,9 +190,9 @@ healthRouter.post("/routines", validate(createRoutineSchema), async (req, res, n
   }
 });
 
-healthRouter.delete("/routines/:id", async (req, res, next) => {
+healthRouter.delete("/routines/:id", requirePermission("health", "manageRoutines"), async (req, res, next) => {
   try {
-    await healthService.deleteHealthRoutine(req.params.id, req.user!.houseId);
+    await healthService.deleteHealthRoutine(req.params.id as string, req.user!.houseId);
     const response: ApiResponse = { success: true, data: null };
     res.json(response);
   } catch (error) {

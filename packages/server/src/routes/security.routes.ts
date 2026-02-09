@@ -5,7 +5,7 @@
 import { Router, type Router as RouterType } from "express";
 import { z } from "zod";
 import { validate } from "../middleware/validate";
-import { authenticate, authorize } from "../middleware/auth";
+import { authenticate, authorize, requirePermission } from "../middleware/auth";
 import * as securityService from "../services/security.service";
 import type { ApiResponse } from "@homeassistan/shared";
 
@@ -55,7 +55,7 @@ const createVisitorCodeSchema = z.object({
 // CONTACTOS DE EMERGENCIA
 // ══════════════════════════════════════════════
 
-securityRouter.get("/contacts", async (req, res, next) => {
+securityRouter.get("/contacts", requirePermission("security", "viewContacts"), async (req, res, next) => {
   try {
     const data = await securityService.getEmergencyContacts(req.user!.houseId);
     const response: ApiResponse = { success: true, data };
@@ -65,7 +65,7 @@ securityRouter.get("/contacts", async (req, res, next) => {
   }
 });
 
-securityRouter.post("/contacts", validate(createContactSchema), async (req, res, next) => {
+securityRouter.post("/contacts", requirePermission("security", "manageContacts"), validate(createContactSchema), async (req, res, next) => {
   try {
     const data = await securityService.createEmergencyContact(req.user!.houseId, req.body);
     const response: ApiResponse = { success: true, data };
@@ -75,7 +75,7 @@ securityRouter.post("/contacts", validate(createContactSchema), async (req, res,
   }
 });
 
-securityRouter.put("/contacts/:id", validate(updateContactSchema), async (req, res, next) => {
+securityRouter.put("/contacts/:id", requirePermission("security", "manageContacts"), validate(updateContactSchema), async (req, res, next) => {
   try {
     const data = await securityService.updateEmergencyContact(
       req.params.id as string,
@@ -89,7 +89,7 @@ securityRouter.put("/contacts/:id", validate(updateContactSchema), async (req, r
   }
 });
 
-securityRouter.delete("/contacts/:id", async (req, res, next) => {
+securityRouter.delete("/contacts/:id", requirePermission("security", "manageContacts"), async (req, res, next) => {
   try {
     await securityService.deleteEmergencyContact(req.params.id as string, req.user!.houseId);
     const response: ApiResponse = { success: true, data: null };
@@ -103,7 +103,7 @@ securityRouter.delete("/contacts/:id", async (req, res, next) => {
 // BÓVEDA SEGURA
 // ══════════════════════════════════════════════
 
-securityRouter.get("/vault", authorize("admin", "responsible"), async (req, res, next) => {
+securityRouter.get("/vault", requirePermission("security", "manageVault"), async (req, res, next) => {
   try {
     const data = await securityService.getVaultEntries(req.user!.houseId);
     const response: ApiResponse = { success: true, data };
@@ -115,7 +115,7 @@ securityRouter.get("/vault", authorize("admin", "responsible"), async (req, res,
 
 securityRouter.post(
   "/vault",
-  authorize("admin", "responsible"),
+  requirePermission("security", "manageVault"),
   validate(createVaultSchema),
   async (req, res, next) => {
     try {
@@ -134,7 +134,7 @@ securityRouter.post(
 
 securityRouter.put(
   "/vault/:id",
-  authorize("admin", "responsible"),
+  requirePermission("security", "manageVault"),
   validate(updateVaultSchema),
   async (req, res, next) => {
     try {
@@ -151,7 +151,7 @@ securityRouter.put(
   },
 );
 
-securityRouter.delete("/vault/:id", authorize("admin", "responsible"), async (req, res, next) => {
+securityRouter.delete("/vault/:id", requirePermission("security", "manageVault"), async (req, res, next) => {
   try {
     await securityService.deleteVaultEntry(req.params.id as string, req.user!.houseId);
     const response: ApiResponse = { success: true, data: null };
@@ -165,7 +165,7 @@ securityRouter.delete("/vault/:id", authorize("admin", "responsible"), async (re
 // CÓDIGOS DE VISITANTE
 // ══════════════════════════════════════════════
 
-securityRouter.get("/visitor-codes", async (req, res, next) => {
+securityRouter.get("/visitor-codes", requirePermission("security", "viewVisitorCodes"), async (req, res, next) => {
   try {
     const data = await securityService.getVisitorCodes(req.user!.houseId);
     const response: ApiResponse = { success: true, data };
@@ -177,7 +177,7 @@ securityRouter.get("/visitor-codes", async (req, res, next) => {
 
 securityRouter.post(
   "/visitor-codes",
-  authorize("admin", "responsible"),
+  requirePermission("security", "manageVisitorCodes"),
   validate(createVisitorCodeSchema),
   async (req, res, next) => {
     try {
@@ -196,7 +196,7 @@ securityRouter.post(
 
 securityRouter.delete(
   "/visitor-codes/:id",
-  authorize("admin", "responsible"),
+  requirePermission("security", "manageVisitorCodes"),
   async (req, res, next) => {
     try {
       await securityService.deleteVisitorCode(req.params.id as string, req.user!.houseId);
@@ -212,7 +212,7 @@ securityRouter.delete(
 // LOGS DE ACCESO
 // ══════════════════════════════════════════════
 
-securityRouter.get("/access-logs", authorize("admin"), async (req, res, next) => {
+securityRouter.get("/access-logs", requirePermission("security", "viewAccessLogs"), async (req, res, next) => {
   try {
     const data = await securityService.getAccessLogs(req.user!.houseId);
     const response: ApiResponse = { success: true, data };
