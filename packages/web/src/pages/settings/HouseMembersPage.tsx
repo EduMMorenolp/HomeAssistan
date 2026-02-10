@@ -65,6 +65,13 @@ export function HouseMembersPage() {
   const [invRole, setInvRole] = useState<string>("member");
   const [invTempPin, setInvTempPin] = useState("");
 
+  // ── External access config state ──
+  const [extExpiry, setExtExpiry] = useState("");
+  const [extDays, setExtDays] = useState<string[]>([]);
+  const [extTimeStart, setExtTimeStart] = useState("08:00");
+  const [extTimeEnd, setExtTimeEnd] = useState("18:00");
+  const [extModules, setExtModules] = useState<string[]>([]);
+
   const houseId = house?.id;
 
   const { data: members = [] } = useQuery<HouseMember[]>({
@@ -117,6 +124,14 @@ export function HouseMembersPage() {
         personalPin: newPin,
         houseId,
         role: newUserRole,
+        ...(newUserRole === "external" && {
+          accessExpiry: extExpiry || undefined,
+          accessSchedule:
+            extDays.length > 0
+              ? { days: extDays, timeStart: extTimeStart, timeEnd: extTimeEnd }
+              : undefined,
+          allowedModules: extModules.length > 0 ? extModules : undefined,
+        }),
       });
     },
     onSuccess: () => {
@@ -127,6 +142,9 @@ export function HouseMembersPage() {
       setNewEmail("");
       setNewPin("");
       setNewUserRole("member");
+      setExtExpiry("");
+      setExtDays([]);
+      setExtModules([]);
     },
     onError: () => toast.error("Error al crear miembro"),
   });
@@ -199,6 +217,38 @@ export function HouseMembersPage() {
   const canManageMember = (memberRole: string) => {
     return (
       ROLE_HIERARCHY[myRole as Role] > ROLE_HIERARCHY[memberRole as Role]
+    );
+  };
+
+  const MODULE_OPTIONS = [
+    { key: "tasks", label: "Tareas" },
+    { key: "finance", label: "Finanzas" },
+    { key: "calendar", label: "Calendario" },
+    { key: "communication", label: "Comunicación" },
+    { key: "health", label: "Salud" },
+    { key: "security", label: "Seguridad" },
+    { key: "dashboard", label: "Dashboard" },
+  ];
+
+  const DAY_OPTIONS = [
+    { key: "monday", label: "Lun" },
+    { key: "tuesday", label: "Mar" },
+    { key: "wednesday", label: "Mié" },
+    { key: "thursday", label: "Jue" },
+    { key: "friday", label: "Vie" },
+    { key: "saturday", label: "Sáb" },
+    { key: "sunday", label: "Dom" },
+  ];
+
+  const toggleDay = (day: string) => {
+    setExtDays((prev) =>
+      prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day],
+    );
+  };
+
+  const toggleModule = (mod: string) => {
+    setExtModules((prev) =>
+      prev.includes(mod) ? prev.filter((m) => m !== mod) : [...prev, mod],
     );
   };
 
@@ -360,6 +410,25 @@ export function HouseMembersPage() {
               </select>
             </div>
           </div>
+
+          {/* External access config — shown when role = 'external' */}
+          {newUserRole === "external" && (
+            <ExternalAccessFields
+              extExpiry={extExpiry}
+              setExtExpiry={setExtExpiry}
+              extDays={extDays}
+              toggleDay={toggleDay}
+              extTimeStart={extTimeStart}
+              setExtTimeStart={setExtTimeStart}
+              extTimeEnd={extTimeEnd}
+              setExtTimeEnd={setExtTimeEnd}
+              extModules={extModules}
+              toggleModule={toggleModule}
+              dayOptions={DAY_OPTIONS}
+              moduleOptions={MODULE_OPTIONS}
+            />
+          )}
+
           <button
             onClick={() => createUser.mutate()}
             disabled={!newName.trim() || newPin.length < 4}
@@ -551,6 +620,141 @@ export function HouseMembersPage() {
         {members.length === 0 && (
           <p className="text-center py-8 text-slate-400 text-sm">Sin miembros</p>
         )}
+      </div>
+    </div>
+  );
+}
+// ── Sub-component: External Access Config Fields ──
+
+function ExternalAccessFields({
+  extExpiry,
+  setExtExpiry,
+  extDays,
+  toggleDay,
+  extTimeStart,
+  setExtTimeStart,
+  extTimeEnd,
+  setExtTimeEnd,
+  extModules,
+  toggleModule,
+  dayOptions,
+  moduleOptions,
+}: {
+  extExpiry: string;
+  setExtExpiry: (v: string) => void;
+  extDays: string[];
+  toggleDay: (d: string) => void;
+  extTimeStart: string;
+  setExtTimeStart: (v: string) => void;
+  extTimeEnd: string;
+  setExtTimeEnd: (v: string) => void;
+  extModules: string[];
+  toggleModule: (m: string) => void;
+  dayOptions: { key: string; label: string }[];
+  moduleOptions: { key: string; label: string }[];
+}) {
+  return (
+    <div className="bg-slate-50 dark:bg-slate-900/50 rounded-lg p-3 border border-slate-200 dark:border-slate-700 space-y-3">
+      <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+        Configuración de Acceso Externo
+      </h4>
+
+      {/* Expiry date */}
+      <div>
+        <label className="text-xs text-slate-500 mb-1 block">
+          Fecha de expiración
+        </label>
+        <input
+          type="date"
+          value={extExpiry}
+          onChange={(e) => setExtExpiry(e.target.value)}
+          className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm"
+        />
+        <p className="text-[10px] text-slate-400 mt-0.5">
+          Dejar vacío para acceso sin expiración
+        </p>
+      </div>
+
+      {/* Days */}
+      <div>
+        <label className="text-xs text-slate-500 mb-1.5 block">
+          Días permitidos
+        </label>
+        <div className="flex flex-wrap gap-1.5">
+          {dayOptions.map((d) => (
+            <button
+              key={d.key}
+              type="button"
+              onClick={() => toggleDay(d.key)}
+              className={cn(
+                "px-2.5 py-1 rounded-lg text-xs font-medium transition-colors",
+                extDays.includes(d.key)
+                  ? "bg-blue-500 text-white"
+                  : "bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-300 dark:hover:bg-slate-600",
+              )}
+            >
+              {d.label}
+            </button>
+          ))}
+        </div>
+        <p className="text-[10px] text-slate-400 mt-0.5">
+          Dejar vacío para todos los días
+        </p>
+      </div>
+
+      {/* Time window */}
+      {extDays.length > 0 && (
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <label className="text-xs text-slate-500 mb-1 block">
+              Hora inicio
+            </label>
+            <input
+              type="time"
+              value={extTimeStart}
+              onChange={(e) => setExtTimeStart(e.target.value)}
+              className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm"
+            />
+          </div>
+          <div>
+            <label className="text-xs text-slate-500 mb-1 block">
+              Hora fin
+            </label>
+            <input
+              type="time"
+              value={extTimeEnd}
+              onChange={(e) => setExtTimeEnd(e.target.value)}
+              className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm"
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Allowed modules */}
+      <div>
+        <label className="text-xs text-slate-500 mb-1.5 block">
+          Módulos permitidos
+        </label>
+        <div className="flex flex-wrap gap-1.5">
+          {moduleOptions.map((m) => (
+            <button
+              key={m.key}
+              type="button"
+              onClick={() => toggleModule(m.key)}
+              className={cn(
+                "px-2.5 py-1 rounded-lg text-xs font-medium transition-colors",
+                extModules.includes(m.key)
+                  ? "bg-emerald-500 text-white"
+                  : "bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-300 dark:hover:bg-slate-600",
+              )}
+            >
+              {m.label}
+            </button>
+          ))}
+        </div>
+        <p className="text-[10px] text-slate-400 mt-0.5">
+          Dejar vacío para acceso según permisos del rol
+        </p>
       </div>
     </div>
   );

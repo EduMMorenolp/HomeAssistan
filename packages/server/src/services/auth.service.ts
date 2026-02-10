@@ -141,6 +141,13 @@ export async function loginUser(data: UserLoginRequest): Promise<UserLoginRespon
     throw new AppError(401, "INVALID_PIN", "PIN incorrecto");
   }
 
+  // Check external access expiry
+  if (membership.role === "external" && membership.accessExpiry) {
+    if (new Date() > new Date(membership.accessExpiry)) {
+      throw new AppError(403, "ACCESS_EXPIRED", "Tu acceso ha expirado. Contacta al responsable de la casa.");
+    }
+  }
+
   // Generar tokens
   const payload: JwtPayload = {
     userId: user.id,

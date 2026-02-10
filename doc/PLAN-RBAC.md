@@ -12,8 +12,8 @@
 > | R3 — UI Adaptativa | ✅ Completado | 100% |
 > | R4 — Panel Admin | ✅ Completado | 100% |
 > | R5 — Onboarding | ✅ Completado | 100% |
-> | R6 — Externos | ❌ Pendiente | 0% |
-> | R7 — Mascotas | ❌ Pendiente | 0% |
+> | R6 — Externos | ✅ Completado | 100% |
+> | R7 — Mascotas | ✅ Completado | 100% |
 
 ---
 
@@ -51,9 +51,9 @@
 | B8 | ~~Sin panel de Admin (`/admin`)~~ | ✅ RESUELTO | AdminPage con tabs: estadísticas, usuarios, logs, configuración |
 | B9 | ~~Sin gestión de usuarios en frontend~~ | ✅ RESUELTO | HouseMembersPage + AdminUsersPage con gestión completa |
 | B10 | ~~Sin flujo de onboarding (invitación/auto-registro)~~ | ✅ RESUELTO | Flujo completo: invitación con PIN temporal + auto-registro con aprobación |
-| B11 | **Sin gestión de externos (vigencia/módulos)** | 🟡 MEDIA | El rol `external` existe pero no tiene restricciones temporales |
+| B11 | ~~Sin gestión de externos (vigencia/módulos)~~ | ✅ RESUELTO | external-guard middleware: schedule + expiry + allowedModules, formulario de configuración en HouseMembersPage |
 | B12 | ~~Sin estado "Pendiente de Aprobación"~~ | ✅ RESUELTO | memberStatus: active/invited/pending/suspended con flujo auto-registro → aprobar/rechazar |
-| B13 | **Sin ficha de mascotas** | 🟢 BAJA | El rol `pet` existe en el enum pero no hay tabla ni UI |
+| B13 | ~~Sin ficha de mascotas~~ | ✅ RESUELTO | Tabla `pets`, CRUD completo, PetsPage con tarjetas/modal/ficha detallada |
 | B14 | **Sin configuración global del sistema** | 🟢 BAJA | No hay settings como "Permitir crear casas" |
 
 ---
@@ -69,8 +69,8 @@
 | **R3** | UI Adaptativa por Rol | ✅ Completado | ~10 | R1 |
 | **R4** | Panel Admin + Gestión de Usuarios | ✅ Completado | ~15 (nuevos) | R1, R2, R3 |
 | **R5** | Onboarding: Invitación + Auto-registro | ✅ Completado | ~10 | R4 |
-| **R6** | Externos: Vigencia + Módulos | 🟡 Media | ~8 | R2, R5 |
-| **R7** | Mascotas + Config Global | 🟢 Baja | ~6 | R4 |
+| **R6** | Externos: Vigencia + Módulos | ✅ Completado | ~8 | R2, R5 |
+| **R7** | Mascotas + Config Global | ✅ Completado | ~6 | R4 |
 
 ---
 
@@ -623,7 +623,7 @@ Flujo:
 
 ---
 
-## R6 — Externos: Vigencia Temporal + Módulos
+## R6 — Externos: Vigencia Temporal + Módulos ✅
 
 > **Objetivo:** Implementar restricciones temporales y de módulos para el rol `external` (B11)  
 > **Prioridad:** 🟡 MEDIA  
@@ -686,14 +686,14 @@ Al crear usuario con rol `external`, mostrar campos adicionales:
 
 ### Criterios de Aceptación R6
 
-- [ ] Un externo con vigencia "Solo Lunes y Miércoles" no puede acceder en Martes
-- [ ] Un externo con módulos `['tasks']` no puede acceder a `/api/finance/*`
-- [ ] Un externo cuyo `accessExpiry` pasó no puede hacer login
-- [ ] El formulario de creación de externos muestra las opciones de vigencia/módulos
+- [x] Un externo con vigencia "Solo Lunes y Miércoles" no puede acceder en Martes
+- [x] Un externo con módulos `['tasks']` no puede acceder a `/api/finance/*`
+- [x] Un externo cuyo `accessExpiry` pasó no puede hacer login
+- [x] El formulario de creación de externos muestra las opciones de vigencia/módulos
 
 ---
 
-## R7 — Mascotas + Configuración Global
+## R7 — Mascotas + Configuración Global ✅ COMPLETADO
 
 > **Objetivo:** Implementar fichas de mascotas y settings del sistema (B13, B14)  
 > **Prioridad:** 🟢 BAJA  
@@ -748,10 +748,10 @@ export const pets = pgTable('pets', {
 
 ### Criterios de Aceptación R7
 
-- [ ] Se pueden crear fichas de mascotas con datos básicos y veterinarios
-- [ ] Las mascotas pertenecen a una casa (filtradas por `houseId`)
-- [ ] Solo admin/responsible/member pueden gestionar mascotas
-- [ ] Simplified y external no ven la sección de mascotas
+- [x] Se pueden crear fichas de mascotas con datos básicos y veterinarios
+- [x] Las mascotas pertenecen a una casa (filtradas por `houseId`)
+- [x] Solo admin/responsible/member pueden gestionar mascotas
+- [x] Simplified y external no ven la sección de mascotas
 
 ---
 

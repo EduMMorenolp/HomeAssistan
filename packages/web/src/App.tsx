@@ -61,6 +61,9 @@ const HouseMembersPage = lazy(() =>
     default: m.HouseMembersPage,
   })),
 );
+const PetsPage = lazy(() =>
+  import("@/pages/PetsPage").then((m) => ({ default: m.PetsPage })),
+);
 
 // Spinner de carga para Suspense
 function PageLoader() {
@@ -130,6 +133,16 @@ export function App() {
               element={
                 <RoleGuard allowedRoles={["admin"]} redirectTo="/dashboard">
                   <AdminPage />
+                </RoleGuard>
+              }
+            />
+
+            {/* ── Mascotas (admin/responsible/member) ── */}
+            <Route
+              path="/mascotas"
+              element={
+                <RoleGuard minRole="member" redirectTo="/dashboard">
+                  <PetsPage />
                 </RoleGuard>
               }
             />

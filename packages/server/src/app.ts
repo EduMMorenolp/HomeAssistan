@@ -18,6 +18,8 @@ import { calendarRouter } from "./routes/calendar.routes";
 import { healthRouter } from "./routes/health.routes";
 import { securityRouter } from "./routes/security.routes";
 import { adminRouter } from "./routes/admin.routes";
+import { petsRouter } from "./routes/pets.routes";
+import { checkExternalAccess } from "./middleware/external-guard";
 
 export const app: Express = express();
 
@@ -42,14 +44,18 @@ app.get("/api/health", (_req, res) => {
 app.use("/api/auth", authRouter);
 app.use("/api/houses", housesRouter);
 app.use("/api/users", usersRouter);
-app.use("/api/tasks", tasksRouter);
-app.use("/api/finance", financeRouter);
-app.use("/api/dashboard", dashboardRouter);
-app.use("/api/communication", communicationRouter);
-app.use("/api/calendar", calendarRouter);
-app.use("/api/health", healthRouter);
-app.use("/api/security", securityRouter);
 app.use("/api/admin", adminRouter);
+app.use("/api/pets", petsRouter);
+
+// ── Module Routes (with external access guard) ──
+const externalGuard = checkExternalAccess();
+app.use("/api/tasks", externalGuard, tasksRouter);
+app.use("/api/finance", externalGuard, financeRouter);
+app.use("/api/dashboard", externalGuard, dashboardRouter);
+app.use("/api/communication", externalGuard, communicationRouter);
+app.use("/api/calendar", externalGuard, calendarRouter);
+app.use("/api/health", externalGuard, healthRouter);
+app.use("/api/security", externalGuard, securityRouter);
 
 // ── Error Handler (must be last) ─────────────
 app.use(errorHandler);

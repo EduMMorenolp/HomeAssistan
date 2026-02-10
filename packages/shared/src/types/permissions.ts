@@ -95,6 +95,14 @@ export const PERMISSIONS = {
     managePreferences: ["admin", "responsible", "member", "simplified", "external"],
     viewActivity: ["admin", "responsible"],
   },
+
+  // ── 9. Mascotas ────────────────────────────
+  pets: {
+    viewPets: ["admin", "responsible", "member"],
+    createPet: ["admin", "responsible", "member"],
+    editPet: ["admin", "responsible", "member"],
+    deletePet: ["admin", "responsible"],
+  },
 } as const;
 
 // ── Type Utilities ───────────────────────────

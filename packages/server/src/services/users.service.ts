@@ -16,6 +16,10 @@ export async function createUser(data: {
   profileType?: "power" | "focus";
   houseId: string;
   role?: Role;
+  // External access config
+  accessSchedule?: unknown;
+  allowedModules?: string[];
+  accessExpiry?: string;
 }) {
   const pinHash = await hashPin(data.personalPin);
 
@@ -41,6 +45,11 @@ export async function createUser(data: {
     houseId: data.houseId,
     userId: user.id,
     role: data.role || "member",
+    ...(data.role === "external" && {
+      accessSchedule: data.accessSchedule ?? null,
+      allowedModules: data.allowedModules ?? null,
+      accessExpiry: data.accessExpiry ? new Date(data.accessExpiry) : null,
+    }),
   });
 
   return { ...user, role: data.role || "member" };

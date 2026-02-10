@@ -31,6 +31,16 @@ const createUserSchema = z.object({
     .enum(["admin", "responsible", "member", "simplified", "external", "pet"])
     .optional()
     .default("member"),
+  // External access config (only used when role = 'external')
+  accessSchedule: z
+    .object({
+      days: z.array(z.string()).optional(),
+      timeStart: z.string().optional(),
+      timeEnd: z.string().optional(),
+    })
+    .optional(),
+  allowedModules: z.array(z.string()).optional(),
+  accessExpiry: z.string().optional(),
 });
 
 const updateUserSchema = z.object({

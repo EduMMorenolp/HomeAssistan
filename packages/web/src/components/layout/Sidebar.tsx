@@ -15,6 +15,7 @@ import {
   Wallet,
   Heart,
   Shield,
+  PawPrint,
   Settings,
   LogOut,
   X,
@@ -37,6 +38,7 @@ const navItems: NavItem[] = [
   { to: "/finanzas", icon: Wallet, label: "Finanzas", module: "finance" },
   { to: "/salud", icon: Heart, label: "Salud", module: "health" },
   { to: "/seguridad", icon: Shield, label: "Seguridad", module: "security" },
+  { to: "/mascotas", icon: PawPrint, label: "Mascotas", module: "pets" },
 ];
 
 interface SidebarProps {
