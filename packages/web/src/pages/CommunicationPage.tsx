@@ -2,12 +2,14 @@
 // Communication Page (Anuncios, Chat, Notificaciones, Pánico)
 // ══════════════════════════════════════════════
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useLocation } from "react-router-dom";
 import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { usePermissions } from "@/hooks/usePermissions";
+import { useAuthStore } from "@/stores/auth.store";
 import type {
   ApiResponse,
   AnnouncementInfo,
@@ -27,6 +29,7 @@ import {
   Check,
   CheckCheck,
   Trash2,
+  Pencil,
 } from "lucide-react";
 
 type Tab = "announcements" | "chat" | "notifications" | "panic";
@@ -34,6 +37,16 @@ type Tab = "announcements" | "chat" | "notifications" | "panic";
 export function CommunicationPage() {
   const [tab, setTab] = useState<Tab>("announcements");
   const { can } = usePermissions();
+  const location = useLocation();
+
+  // Auto-open panic tab when navigated with state.panic (e.g. from S.O.S. button)
+  useEffect(() => {
+    if ((location.state as any)?.panic) {
+      setTab("panic");
+      // Clear the state so refreshing doesn't re-trigger
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   const allTabs: { key: Tab; label: string; icon: typeof Megaphone; visible: boolean }[] = [
     { key: "announcements", label: "Anuncios", icon: Megaphone, visible: can("communication", "viewAnnouncements") },
@@ -85,6 +98,7 @@ function AnnouncementsSection() {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [priority, setPriority] = useState<"normal" | "important" | "urgent">("normal");
+  const [editingAnnouncement, setEditingAnnouncement] = useState<AnnouncementInfo | null>(null);
 
   const { data: announcements = [] } = useQuery<AnnouncementInfo[]>({
     queryKey: ["announcements"],
@@ -111,6 +125,28 @@ function AnnouncementsSection() {
     onError: () => toast.error("Error al publicar"),
   });
 
+  const updateAnnouncement = useMutation({
+    mutationFn: async ({ id, body }: { id: string; body: Record<string, unknown> }) => {
+      await api.put(`/communication/announcements/${id}`, body);
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["announcements"] });
+      toast.success("Anuncio actualizado");
+      setEditingAnnouncement(null);
+    },
+    onError: () => toast.error("Error al actualizar"),
+  });
+
+  const togglePin = useMutation({
+    mutationFn: async (a: AnnouncementInfo) => {
+      await api.put(`/communication/announcements/${a.id}`, { isPinned: !a.isPinned });
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["announcements"] });
+      toast.success("Anuncio actualizado");
+    },
+  });
+
   const del = useMutation({
     mutationFn: async (id: string) => {
       await api.delete(`/communication/announcements/${id}`);
@@ -120,6 +156,22 @@ function AnnouncementsSection() {
       toast.success("Anuncio eliminado");
     },
   });
+
+  function startEditAnnouncement(a: AnnouncementInfo) {
+    setEditingAnnouncement(a);
+    setTitle(a.title);
+    setContent(a.content);
+    setPriority(a.priority);
+    setShowCreate(false);
+  }
+
+  function saveEditAnnouncement() {
+    if (!editingAnnouncement) return;
+    updateAnnouncement.mutate({
+      id: editingAnnouncement.id,
+      body: { title, content, priority },
+    });
+  }
 
   const priorityColors = {
     normal: "border-slate-200 dark:border-slate-700",
@@ -208,12 +260,28 @@ function AnnouncementsSection() {
                   Por {a.authorName} · {new Date(a.createdAt).toLocaleDateString("es")}
                 </p>
               </div>
-              <button
-                onClick={() => del.mutate(a.id)}
-                className="p-1.5 text-slate-400 hover:text-red-500 transition-colors"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => togglePin.mutate(a)}
+                  className={cn("p-1.5 transition-colors", a.isPinned ? "text-blue-500 hover:text-blue-700" : "text-slate-400 hover:text-blue-500")}
+                  title={a.isPinned ? "Desfijar" : "Fijar"}
+                >
+                  <Pin className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => startEditAnnouncement(a)}
+                  className="p-1.5 text-slate-400 hover:text-blue-500 transition-colors"
+                  title="Editar"
+                >
+                  <Pencil className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => del.mutate(a.id)}
+                  className="p-1.5 text-slate-400 hover:text-red-500 transition-colors"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
             </div>
           </div>
         ))}
@@ -221,6 +289,57 @@ function AnnouncementsSection() {
           <p className="text-center py-8 text-slate-400 text-sm">No hay anuncios</p>
         )}
       </div>
+
+      {/* Modal de edición de anuncio */}
+      {editingAnnouncement && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-md p-6 space-y-3">
+            <div className="flex justify-between items-center">
+              <h3 className="font-semibold text-slate-900 dark:text-white">Editar anuncio</h3>
+              <button onClick={() => setEditingAnnouncement(null)} className="p-1 text-slate-400 hover:text-slate-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Título del anuncio"
+              className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm"
+            />
+            <textarea
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              placeholder="Contenido..."
+              rows={3}
+              className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm resize-none"
+            />
+            <select
+              value={priority}
+              onChange={(e) => setPriority(e.target.value as typeof priority)}
+              className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm"
+            >
+              <option value="normal">Normal</option>
+              <option value="important">Importante</option>
+              <option value="urgent">Urgente</option>
+            </select>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setEditingAnnouncement(null)}
+                className="flex-1 py-2 border border-slate-300 dark:border-slate-600 rounded-lg text-sm"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={saveEditAnnouncement}
+                disabled={!title.trim() || !content.trim()}
+                className="flex-1 py-2 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 disabled:opacity-50"
+              >
+                Guardar cambios
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -232,6 +351,7 @@ function AnnouncementsSection() {
 function ChatSection() {
   const qc = useQueryClient();
   const [msg, setMsg] = useState("");
+  const currentUserId = useAuthStore((s) => s.user?.id);
 
   const { data: messages = [] } = useQuery<MessageInfo[]>({
     queryKey: ["messages"],
@@ -258,20 +378,28 @@ function ChatSection() {
   return (
     <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 flex flex-col h-[60vh]">
       <div className="flex-1 overflow-y-auto p-4 space-y-3">
-        {sortedMessages.map((m) => (
-          <div key={m.id} className="space-y-0.5">
-            <p className="text-xs font-medium text-blue-500">{m.senderName}</p>
-            <p className="text-sm text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-900 rounded-lg px-3 py-2 inline-block">
-              {m.content}
-            </p>
-            <p className="text-[10px] text-slate-400">
-              {new Date(m.createdAt).toLocaleTimeString("es", {
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
-            </p>
-          </div>
-        ))}
+        {sortedMessages.map((m) => {
+          const isOwn = m.senderId === currentUserId;
+          return (
+            <div key={m.id} className={cn("space-y-0.5", isOwn ? "text-right" : "text-left")}>
+              <p className={cn("text-xs font-medium", isOwn ? "text-green-500" : "text-blue-500")}>{m.senderName}</p>
+              <p className={cn(
+                "text-sm rounded-lg px-3 py-2 inline-block max-w-[80%]",
+                isOwn
+                  ? "bg-blue-500 text-white rounded-br-none"
+                  : "bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-300 rounded-bl-none"
+              )}>
+                {m.content}
+              </p>
+              <p className="text-[10px] text-slate-400">
+                {new Date(m.createdAt).toLocaleTimeString("es", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </p>
+            </div>
+          );
+        })}
         {messages.length === 0 && (
           <p className="text-center py-8 text-slate-400 text-sm">Sin mensajes aún</p>
         )}

@@ -3,10 +3,13 @@
 // ══════════════════════════════════════════════
 
 import { NavLink } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores/auth.store";
 import { usePermissions } from "@/hooks/usePermissions";
-import type { PermissionModule } from "@homeassistan/shared";
+import { api } from "@/lib/api";
+import type { PermissionModule, ApiResponse } from "@homeassistan/shared";
 import {
   Home,
   MessageSquare,
@@ -20,6 +23,8 @@ import {
   LogOut,
   X,
   ShieldCheck,
+  Sun,
+  Moon,
 } from "lucide-react";
 
 interface NavItem {
@@ -49,6 +54,36 @@ interface SidebarProps {
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const { house, logout } = useAuthStore();
   const { canAccessModule, isAdmin } = usePermissions();
+
+  // Theme toggle
+  const [dark, setDark] = useState(() => document.documentElement.classList.contains("dark"));
+  useEffect(() => {
+    if (dark) {
+      document.documentElement.classList.add("dark");
+      localStorage.setItem("theme", "dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+      localStorage.setItem("theme", "light");
+    }
+  }, [dark]);
+
+  // Badge data
+  const { data: stats } = useQuery<{ pendingTasks: number; unreadNotifications: number }>({
+    queryKey: ["sidebar-badges"],
+    queryFn: async () => {
+      const { data } = await api.get<ApiResponse>("/dashboard/stats");
+      const d = data.data as { pendingTasks: number; unreadNotifications: number };
+      return { pendingTasks: d.pendingTasks, unreadNotifications: d.unreadNotifications };
+    },
+    refetchInterval: 30000,
+    staleTime: 15000,
+  });
+
+  // Map module to badge count
+  const badgeCounts: Partial<Record<string, number>> = {
+    "/tareas": stats?.pendingTasks ?? 0,
+    "/comunicacion": stats?.unreadNotifications ?? 0,
+  };
 
   // Filtrar items de navegación según el rol del usuario
   const visibleItems = navItems.filter(
@@ -96,7 +131,12 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
             }
           >
             <item.icon className="w-5 h-5 shrink-0" />
-            <span className="truncate">{item.label}</span>
+            <span className="truncate flex-1">{item.label}</span>
+            {(badgeCounts[item.to] ?? 0) > 0 && (
+              <span className="ml-auto min-w-[20px] h-5 flex items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-bold px-1.5">
+                {badgeCounts[item.to]! > 99 ? "99+" : badgeCounts[item.to]}
+              </span>
+            )}
           </NavLink>
         ))}
 
@@ -121,6 +161,13 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
       {/* Footer */}
       <div className="p-3 border-t border-slate-200 dark:border-slate-700 space-y-1">
+        <button
+          onClick={() => setDark(!dark)}
+          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700/50 w-full text-left"
+        >
+          {dark ? <Sun className="w-5 h-5 shrink-0" /> : <Moon className="w-5 h-5 shrink-0" />}
+          {dark ? "Modo claro" : "Modo oscuro"}
+        </button>
         <NavLink
           to="/settings"
           className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700/50"

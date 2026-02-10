@@ -214,7 +214,9 @@ securityRouter.delete(
 
 securityRouter.get("/access-logs", requirePermission("security", "viewAccessLogs"), async (req, res, next) => {
   try {
-    const data = await securityService.getAccessLogs(req.user!.houseId);
+    const limit = Math.min(Number(req.query.limit) || 100, 500);
+    const offset = Number(req.query.offset) || 0;
+    const data = await securityService.getAccessLogs(req.user!.houseId, limit, offset);
     const response: ApiResponse = { success: true, data };
     res.json(response);
   } catch (error) {

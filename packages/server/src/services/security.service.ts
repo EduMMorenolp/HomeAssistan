@@ -199,7 +199,7 @@ export async function deleteVisitorCode(id: string, houseId: string) {
 // LOGS DE ACCESO
 // ══════════════════════════════════════════════
 
-export async function getAccessLogs(houseId: string, limit = 100) {
+export async function getAccessLogs(houseId: string, limit = 100, offset = 0) {
   return db
     .select({
       id: accessLogs.id,
@@ -214,7 +214,8 @@ export async function getAccessLogs(houseId: string, limit = 100) {
     .leftJoin(users, eq(accessLogs.userId, users.id))
     .where(eq(accessLogs.houseId, houseId))
     .orderBy(desc(accessLogs.createdAt))
-    .limit(limit);
+    .limit(limit)
+    .offset(offset);
 }
 
 export async function logAccess(

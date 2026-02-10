@@ -19,7 +19,7 @@ import { AppError } from "../middleware/error-handler";
 // GASTOS
 // ══════════════════════════════════════════════
 
-export async function getExpenses(houseId: string, userId: string, role: Role) {
+export async function getExpenses(houseId: string, userId: string, role: Role, limit = 50, offset = 0) {
   const baseWhere = eq(expenses.houseId, houseId);
   // admin/responsible ve todo, member/simplified ve solo sus gastos
   const canViewGlobal = hasPermission(role, "finance", "viewGlobalBalance");
@@ -41,7 +41,9 @@ export async function getExpenses(houseId: string, userId: string, role: Role) {
     .from(expenses)
     .leftJoin(users, eq(expenses.paidBy, users.id))
     .where(whereClause)
-    .orderBy(desc(expenses.expenseDate));
+    .orderBy(desc(expenses.expenseDate))
+    .limit(limit)
+    .offset(offset);
 }
 
 export async function getExpenseSummary(houseId: string, userId: string, role: Role) {

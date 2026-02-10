@@ -7,6 +7,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { usePermissions } from "@/hooks/usePermissions";
 import type { ApiResponse, EventInfo } from "@homeassistan/shared";
 import { EVENT_TYPE_LABELS, EVENT_TYPE_COLORS } from "@homeassistan/shared";
 import {
@@ -18,13 +19,18 @@ import {
   Trash2,
   ChevronLeft,
   ChevronRight,
+  Pencil,
 } from "lucide-react";
 
 export function CalendarPage() {
   const qc = useQueryClient();
-  const [showCreate, setShowCreate] = useState(false);
+  const { can } = usePermissions();
+  const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [viewMonth, setViewMonth] = useState(new Date());
+  const [filterFrom, setFilterFrom] = useState("");
+  const [filterTo, setFilterTo] = useState("");
 
   // ── Form state ─────────────────────────────
   const [title, setTitle] = useState("");
@@ -37,9 +43,12 @@ export function CalendarPage() {
   const [recurrence, setRecurrence] = useState("none");
 
   const { data: events = [] } = useQuery<EventInfo[]>({
-    queryKey: ["events"],
+    queryKey: ["events", filterFrom, filterTo],
     queryFn: async () => {
-      const { data } = await api.get<ApiResponse<EventInfo[]>>("/calendar");
+      const params = new URLSearchParams();
+      if (filterFrom) params.set("from", filterFrom);
+      if (filterTo) params.set("to", filterTo);
+      const { data } = await api.get<ApiResponse<EventInfo[]>>(`/calendar?${params}`);
       return data.data!;
     },
   });
@@ -60,10 +69,32 @@ export function CalendarPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["events"] });
       toast.success("Evento creado");
-      setShowCreate(false);
+      setShowForm(false);
       resetForm();
     },
     onError: () => toast.error("Error al crear evento"),
+  });
+
+  const update = useMutation({
+    mutationFn: async (id: string) => {
+      await api.put(`/calendar/${id}`, {
+        title,
+        description: description || undefined,
+        type,
+        startDate,
+        endDate: endDate || undefined,
+        allDay,
+        location: location || undefined,
+        recurrence,
+      });
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["events"] });
+      toast.success("Evento actualizado");
+      setShowForm(false);
+      resetForm();
+    },
+    onError: () => toast.error("Error al actualizar evento"),
   });
 
   const del = useMutation({
@@ -77,6 +108,7 @@ export function CalendarPage() {
   });
 
   function resetForm() {
+    setEditingId(null);
     setTitle("");
     setDescription("");
     setType("general");
@@ -85,6 +117,19 @@ export function CalendarPage() {
     setAllDay(false);
     setLocation("");
     setRecurrence("none");
+  }
+
+  function startEdit(e: EventInfo) {
+    setEditingId(e.id);
+    setTitle(e.title);
+    setDescription(e.description || "");
+    setType(e.type);
+    setStartDate(e.startDate.slice(0, 16)); // datetime-local format
+    setEndDate(e.endDate ? e.endDate.slice(0, 16) : "");
+    setAllDay(e.allDay);
+    setLocation(e.location || "");
+    setRecurrence(e.recurrence || "none");
+    setShowForm(true);
   }
 
   // ── Calendar helpers ───────────────────────
@@ -116,42 +161,66 @@ export function CalendarPage() {
     setViewMonth(new Date(year, month + 1, 1));
   }
 
-  function getEventsForDay(day: number) {
-    const date = new Date(year, month, day);
-    return events.filter((e) => {
-      const start = new Date(e.startDate);
-      return (
-        start.getFullYear() === date.getFullYear() &&
-        start.getMonth() === date.getMonth() &&
-        start.getDate() === date.getDate()
-      );
-    });
+  function eventOverlapsDay(e: EventInfo, date: Date): boolean {
+    const start = new Date(e.startDate);
+    start.setHours(0, 0, 0, 0);
+    const end = e.endDate ? new Date(e.endDate) : start;
+    end.setHours(23, 59, 59, 999);
+    const d = new Date(date);
+    d.setHours(12, 0, 0, 0);
+    return d >= start && d <= end;
   }
 
-  const selectedDayEvents = events.filter((e) => {
-    const start = new Date(e.startDate);
-    return (
-      start.getFullYear() === selectedDate.getFullYear() &&
-      start.getMonth() === selectedDate.getMonth() &&
-      start.getDate() === selectedDate.getDate()
-    );
-  });
+  function getEventsForDay(day: number) {
+    const date = new Date(year, month, day);
+    return events.filter((e) => eventOverlapsDay(e, date));
+  }
+
+  const selectedDayEvents = events.filter((e) => eventOverlapsDay(e, selectedDate));
 
   return (
     <div className="space-y-4 sm:space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">Calendario</h1>
-        <button
-          onClick={() => setShowCreate(!showCreate)}
-          className="flex items-center gap-1.5 px-3 py-2 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 transition-colors"
-        >
-          {showCreate ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
-          {showCreate ? "Cancelar" : "Nuevo evento"}
-        </button>
+        {can("calendar", "createEvent") && (
+          <button
+            onClick={() => { if (showForm) { setShowForm(false); resetForm(); } else { resetForm(); setShowForm(true); } }}
+            className="flex items-center gap-1.5 px-3 py-2 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 transition-colors"
+          >
+            {showForm ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+            {showForm ? "Cancelar" : "Nuevo evento"}
+          </button>
+        )}
       </div>
 
-      {/* Create form */}
-      {showCreate && (
+      {/* Filtro de fechas */}
+      <div className="flex flex-wrap items-center gap-2 text-sm">
+        <label className="text-slate-500">Desde:</label>
+        <input
+          type="date"
+          value={filterFrom}
+          onChange={(e) => setFilterFrom(e.target.value)}
+          className="px-2 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm"
+        />
+        <label className="text-slate-500">Hasta:</label>
+        <input
+          type="date"
+          value={filterTo}
+          onChange={(e) => setFilterTo(e.target.value)}
+          className="px-2 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm"
+        />
+        {(filterFrom || filterTo) && (
+          <button
+            onClick={() => { setFilterFrom(""); setFilterTo(""); }}
+            className="text-xs text-blue-500 hover:underline"
+          >
+            Limpiar filtro
+          </button>
+        )}
+      </div>
+
+      {/* Create/Edit form */}
+      {showForm && (
         <div className="bg-white dark:bg-slate-800 rounded-xl p-4 border border-slate-200 dark:border-slate-700 space-y-3">
           <input
             value={title}
@@ -226,11 +295,11 @@ export function CalendarPage() {
             </label>
           </div>
           <button
-            onClick={() => create.mutate()}
+            onClick={() => editingId ? update.mutate(editingId) : create.mutate()}
             disabled={!title.trim() || !startDate}
             className="w-full py-2 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 disabled:opacity-50"
           >
-            Crear evento
+            {editingId ? "Guardar cambios" : "Crear evento"}
           </button>
         </div>
       )}
@@ -361,12 +430,23 @@ export function CalendarPage() {
                     )}
                   </div>
                 </div>
-                <button
-                  onClick={() => del.mutate(e.id)}
-                  className="p-1 text-slate-400 hover:text-red-500"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
+                {can("calendar", "editEvent") && (
+                  <button
+                    onClick={() => startEdit(e)}
+                    className="p-1 text-slate-400 hover:text-blue-500"
+                    title="Editar"
+                  >
+                    <Pencil className="w-3.5 h-3.5" />
+                  </button>
+                )}
+                {can("calendar", "deleteEvent") && (
+                  <button
+                    onClick={() => del.mutate(e.id)}
+                    className="p-1 text-slate-400 hover:text-red-500"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                )}
               </div>
             </div>
           ))}

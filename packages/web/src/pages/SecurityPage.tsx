@@ -29,6 +29,7 @@ import {
   Star,
   Eye,
   EyeOff,
+  Pencil,
 } from "lucide-react";
 
 type Tab = "contacts" | "vault" | "codes" | "logs";
@@ -83,6 +84,7 @@ export function SecurityPage() {
 function ContactsSection() {
   const qc = useQueryClient();
   const [showCreate, setShowCreate] = useState(false);
+  const [editingContact, setEditingContact] = useState<EmergencyContactInfo | null>(null);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [relationship, setRelationship] = useState("");
@@ -126,6 +128,35 @@ function ContactsSection() {
       toast.success("Contacto eliminado");
     },
   });
+
+  const updateContact = useMutation({
+    mutationFn: async ({ id, body }: { id: string; body: Record<string, unknown> }) => {
+      await api.put(`/security/contacts/${id}`, body);
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["emergency-contacts"] });
+      toast.success("Contacto actualizado");
+      setEditingContact(null);
+    },
+    onError: () => toast.error("Error al actualizar"),
+  });
+
+  function startEditContact(c: EmergencyContactInfo) {
+    setEditingContact(c);
+    setName(c.name);
+    setPhone(c.phone);
+    setRelationship(c.relationship || "");
+    setIsPrimary(c.isPrimary);
+    setShowCreate(false);
+  }
+
+  function saveEditContact() {
+    if (!editingContact) return;
+    updateContact.mutate({
+      id: editingContact.id,
+      body: { name, phone, relationship: relationship || undefined, isPrimary },
+    });
+  }
 
   return (
     <div className="space-y-4">
@@ -217,6 +248,13 @@ function ContactsSection() {
               <Phone className="w-4 h-4" />
             </a>
             <button
+              onClick={() => startEditContact(c)}
+              className="p-2 text-slate-400 hover:text-blue-500"
+              title="Editar"
+            >
+              <Pencil className="w-4 h-4" />
+            </button>
+            <button
               onClick={() => del.mutate(c.id)}
               className="p-2 text-slate-400 hover:text-red-500"
             >
@@ -228,6 +266,40 @@ function ContactsSection() {
           <p className="text-center py-8 text-slate-400 text-sm">Sin contactos de emergencia</p>
         )}
       </div>
+
+      {/* Modal editar contacto */}
+      {editingContact && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 w-full max-w-md space-y-4 shadow-xl">
+            <div className="flex items-center justify-between">
+              <h3 className="font-semibold text-slate-900 dark:text-white">Editar contacto</h3>
+              <button onClick={() => setEditingContact(null)} className="text-slate-400 hover:text-slate-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="space-y-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Nombre" className="px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm" />
+                <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Teléfono" className="px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm" />
+              </div>
+              <div className="flex items-center gap-3">
+                <input value={relationship} onChange={(e) => setRelationship(e.target.value)} placeholder="Relación" className="flex-1 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm" />
+                <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400 whitespace-nowrap">
+                  <input type="checkbox" checked={isPrimary} onChange={(e) => setIsPrimary(e.target.checked)} className="rounded" />
+                  Principal
+                </label>
+              </div>
+              <button
+                onClick={saveEditContact}
+                disabled={!name.trim() || !phone.trim()}
+                className="w-full py-2 bg-red-500 text-white rounded-lg text-sm hover:bg-red-600 disabled:opacity-50"
+              >
+                Guardar cambios
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -239,6 +311,7 @@ function ContactsSection() {
 function VaultSection() {
   const qc = useQueryClient();
   const [showCreate, setShowCreate] = useState(false);
+  const [editingVault, setEditingVault] = useState<VaultEntryInfo | null>(null);
   const [category, setCategory] = useState<string>("wifi");
   const [label, setLabel] = useState("");
   const [value, setValue] = useState("");
@@ -282,6 +355,35 @@ function VaultSection() {
       toast.success("Entrada eliminada");
     },
   });
+
+  const updateVault = useMutation({
+    mutationFn: async ({ id, body }: { id: string; body: Record<string, unknown> }) => {
+      await api.put(`/security/vault/${id}`, body);
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["vault"] });
+      toast.success("Entrada actualizada");
+      setEditingVault(null);
+    },
+    onError: () => toast.error("Error al actualizar"),
+  });
+
+  function startEditVault(e: VaultEntryInfo) {
+    setEditingVault(e);
+    setCategory(e.category);
+    setLabel(e.label);
+    setValue(e.value);
+    setNotes(e.notes ?? "");
+    setShowCreate(false);
+  }
+
+  function saveEditVault() {
+    if (!editingVault) return;
+    updateVault.mutate({
+      id: editingVault.id,
+      body: { category, label, value, notes: notes || undefined },
+    });
+  }
 
   function toggleVisible(id: string) {
     setVisibleIds((prev) => {
@@ -381,6 +483,13 @@ function VaultSection() {
                 )}
               </button>
               <button
+                onClick={() => startEditVault(e)}
+                className="p-2 text-slate-400 hover:text-blue-500"
+                title="Editar"
+              >
+                <Pencil className="w-4 h-4" />
+              </button>
+              <button
                 onClick={() => {
                   navigator.clipboard.writeText(e.value);
                   toast.success("Copiado");
@@ -402,6 +511,62 @@ function VaultSection() {
           <p className="text-center py-8 text-slate-400 text-sm">Bóveda vacía</p>
         )}
       </div>
+
+      {/* Modal de edición de bóveda */}
+      {editingVault && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-md p-6 space-y-3">
+            <div className="flex justify-between items-center">
+              <h3 className="font-semibold text-slate-900 dark:text-white">Editar entrada</h3>
+              <button onClick={() => setEditingVault(null)} className="p-1 text-slate-400 hover:text-slate-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value as VaultEntryInfo["category"])}
+              className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm"
+            >
+              {Object.entries(VAULT_CATEGORY_LABELS).map(([k, v]) => (
+                <option key={k} value={k}>{v}</option>
+              ))}
+            </select>
+            <input
+              value={label}
+              onChange={(e) => setLabel(e.target.value)}
+              placeholder="Etiqueta"
+              className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm"
+            />
+            <input
+              value={value}
+              onChange={(e) => setValue(e.target.value)}
+              placeholder="Valor"
+              className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm"
+            />
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Notas (opcional)"
+              className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm"
+            />
+            <div className="flex gap-2">
+              <button
+                onClick={() => setEditingVault(null)}
+                className="flex-1 py-2 border border-slate-300 dark:border-slate-600 rounded-lg text-sm"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={saveEditVault}
+                disabled={!label.trim() || !value.trim()}
+                className="flex-1 py-2 bg-red-500 text-white rounded-lg text-sm hover:bg-red-600 disabled:opacity-50"
+              >
+                Guardar cambios
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

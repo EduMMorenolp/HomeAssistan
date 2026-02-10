@@ -7,14 +7,16 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { usePermissions } from "@/hooks/usePermissions";
 import type {
   ApiResponse,
   HealthProfileInfo,
   MedicationInfo,
+  MedicationFrequency,
   HealthRoutineInfo,
 } from "@homeassistan/shared";
 import { BLOOD_TYPE_LABELS, FREQUENCY_LABELS } from "@homeassistan/shared";
-import { Heart, Pill, Activity, Plus, X, Trash2, AlertTriangle, User, Check } from "lucide-react";
+import { Heart, Pill, Activity, Plus, X, Trash2, AlertTriangle, User, Check, Pencil } from "lucide-react";
 
 type Tab = "profiles" | "medications" | "routines";
 
@@ -222,7 +224,9 @@ function ProfilesSection() {
 
 function MedicationsSection() {
   const qc = useQueryClient();
+  const { can } = usePermissions();
   const [showCreate, setShowCreate] = useState(false);
+  const [editingMed, setEditingMed] = useState<MedicationInfo | null>(null);
   const [name, setName] = useState("");
   const [dosage, setDosage] = useState("");
   const [frequency, setFrequency] = useState("daily");
@@ -278,17 +282,31 @@ function MedicationsSection() {
     },
   });
 
+  const updateMed = useMutation({
+    mutationFn: async ({ id, body }: { id: string; body: Record<string, unknown> }) => {
+      await api.put(`/health/medications/${id}`, body);
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["medications"] });
+      toast.success("Medicamento actualizado");
+      setEditingMed(null);
+    },
+    onError: () => toast.error("Error al actualizar"),
+  });
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h2 className="font-semibold text-slate-900 dark:text-white">Medicamentos</h2>
-        <button
-          onClick={() => setShowCreate(!showCreate)}
-          className="flex items-center gap-1.5 px-3 py-2 bg-purple-500 text-white rounded-lg text-sm hover:bg-purple-600"
-        >
-          {showCreate ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
-          {showCreate ? "Cancelar" : "Añadir"}
-        </button>
+        {can("health", "manageMedications") && (
+          <button
+            onClick={() => setShowCreate(!showCreate)}
+            className="flex items-center gap-1.5 px-3 py-2 bg-purple-500 text-white rounded-lg text-sm hover:bg-purple-600"
+          >
+            {showCreate ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+            {showCreate ? "Cancelar" : "Añadir"}
+          </button>
+        )}
       </div>
 
       {showCreate && (
@@ -368,19 +386,32 @@ function MedicationsSection() {
                   </p>
                 </div>
                 <div className="flex items-center gap-1">
-                  <button
-                    onClick={() => logTake.mutate(m.id)}
-                    className="p-1.5 text-green-500 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg"
-                    title="Registrar toma"
-                  >
-                    <Check className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => del.mutate(m.id)}
-                    className="p-1.5 text-slate-400 hover:text-red-500"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                  {can("health", "logMedication") && (
+                    <button
+                      onClick={() => logTake.mutate(m.id)}
+                      className="p-1.5 text-green-500 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg"
+                      title="Registrar toma"
+                    >
+                      <Check className="w-4 h-4" />
+                    </button>
+                  )}
+                  {can("health", "manageMedications") && (
+                    <button
+                      onClick={() => setEditingMed(m)}
+                      className="p-1.5 text-slate-400 hover:text-blue-500"
+                      title="Editar"
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </button>
+                  )}
+                  {can("health", "manageMedications") && (
+                    <button
+                      onClick={() => del.mutate(m.id)}
+                      className="p-1.5 text-slate-400 hover:text-red-500"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
                 </div>
               </div>
               <div className="mt-2 flex items-center gap-2">
@@ -404,6 +435,73 @@ function MedicationsSection() {
           <p className="col-span-2 text-center py-8 text-slate-400 text-sm">Sin medicamentos</p>
         )}
       </div>
+
+      {/* Modal editar medicamento */}
+      {editingMed && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 w-full max-w-md space-y-4 shadow-xl">
+            <div className="flex items-center justify-between">
+              <h3 className="font-semibold text-slate-900 dark:text-white">Editar medicamento</h3>
+              <button onClick={() => setEditingMed(null)} className="text-slate-400 hover:text-slate-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <EditMedForm
+              med={editingMed}
+              onSave={(body) => updateMed.mutate({ id: editingMed.id, body })}
+              isPending={updateMed.isPending}
+            />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function EditMedForm({
+  med,
+  onSave,
+  isPending,
+}: {
+  med: MedicationInfo;
+  onSave: (body: Record<string, unknown>) => void;
+  isPending: boolean;
+}) {
+  const [f, setF] = useState({
+    name: med.name,
+    dosage: med.dosage ?? "",
+    frequency: med.frequency,
+    stock: med.stock,
+    minStock: med.minStock,
+    isActive: med.isActive,
+  });
+
+  return (
+    <div className="space-y-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <input value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} placeholder="Nombre" className="px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm" />
+        <input value={f.dosage} onChange={(e) => setF({ ...f, dosage: e.target.value })} placeholder="Dosis" className="px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm" />
+      </div>
+      <div className="grid grid-cols-3 gap-3">
+        <select value={f.frequency} onChange={(e) => setF({ ...f, frequency: e.target.value as MedicationFrequency })} className="px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm">
+          {Object.entries(FREQUENCY_LABELS).map(([k, v]) => (
+            <option key={k} value={k}>{v}</option>
+          ))}
+        </select>
+        <input type="number" value={f.stock} onChange={(e) => setF({ ...f, stock: +e.target.value })} min={0} className="px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm" />
+        <input type="number" value={f.minStock} onChange={(e) => setF({ ...f, minStock: +e.target.value })} min={0} className="px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm" />
+      </div>
+      <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+        <input type="checkbox" checked={f.isActive} onChange={(e) => setF({ ...f, isActive: e.target.checked })} className="rounded" />
+        Activo
+      </label>
+      <button
+        onClick={() => onSave({ ...f, dosage: f.dosage || undefined })}
+        disabled={isPending || !f.name.trim()}
+        className="w-full py-2 bg-purple-500 text-white rounded-lg text-sm hover:bg-purple-600 disabled:opacity-50"
+      >
+        {isPending ? "Guardando…" : "Guardar cambios"}
+      </button>
     </div>
   );
 }
@@ -414,6 +512,7 @@ function MedicationsSection() {
 
 function RoutinesSection() {
   const qc = useQueryClient();
+  const { can } = usePermissions();
   const [showCreate, setShowCreate] = useState(false);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -462,13 +561,15 @@ function RoutinesSection() {
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h2 className="font-semibold text-slate-900 dark:text-white">Rutinas de salud</h2>
-        <button
-          onClick={() => setShowCreate(!showCreate)}
-          className="flex items-center gap-1.5 px-3 py-2 bg-purple-500 text-white rounded-lg text-sm hover:bg-purple-600"
-        >
-          {showCreate ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
-          {showCreate ? "Cancelar" : "Nueva"}
-        </button>
+        {can("health", "manageRoutines") && (
+          <button
+            onClick={() => setShowCreate(!showCreate)}
+            className="flex items-center gap-1.5 px-3 py-2 bg-purple-500 text-white rounded-lg text-sm hover:bg-purple-600"
+          >
+            {showCreate ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+            {showCreate ? "Cancelar" : "Nueva"}
+          </button>
+        )}
       </div>
 
       {showCreate && (
@@ -516,12 +617,14 @@ function RoutinesSection() {
                   <span className="text-xs text-slate-400">· {r.userName}</span>
                 </div>
               </div>
-              <button
-                onClick={() => del.mutate(r.id)}
-                className="p-1.5 text-slate-400 hover:text-red-500"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
+              {can("health", "manageRoutines") && (
+                <button
+                  onClick={() => del.mutate(r.id)}
+                  className="p-1.5 text-slate-400 hover:text-red-500"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              )}
             </div>
             <div className="flex gap-1 mt-2">
               {dayNames.map((d, i) => (

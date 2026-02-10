@@ -89,7 +89,7 @@ export async function deleteAnnouncement(id: string, houseId: string) {
 // MENSAJES (Chat)
 // ══════════════════════════════════════════════
 
-export async function getMessages(houseId: string, limit = 100, role?: Role) {
+export async function getMessages(houseId: string, limit = 100, role?: Role, offset = 0) {
   // Simplified: limited history (20 messages), External: no history
   let effectiveLimit = limit;
   if (role) {
@@ -114,7 +114,8 @@ export async function getMessages(houseId: string, limit = 100, role?: Role) {
     .leftJoin(users, eq(messages.senderId, users.id))
     .where(eq(messages.houseId, houseId))
     .orderBy(desc(messages.createdAt))
-    .limit(effectiveLimit);
+    .limit(effectiveLimit)
+    .offset(offset);
 }
 
 export async function createMessage(houseId: string, senderId: string, content: string) {

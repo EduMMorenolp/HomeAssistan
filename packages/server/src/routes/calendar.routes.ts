@@ -51,7 +51,9 @@ const respondSchema = z.object({
 
 calendarRouter.get("/", requirePermission("calendar", "viewEvents"), async (req, res, next) => {
   try {
-    const data = await calendarService.getEvents(req.user!.houseId);
+    const from = req.query.from ? new Date(req.query.from as string) : undefined;
+    const to = req.query.to ? new Date(req.query.to as string) : undefined;
+    const data = await calendarService.getEvents(req.user!.houseId, from, to);
     const response: ApiResponse = { success: true, data };
     res.json(response);
   } catch (error) {

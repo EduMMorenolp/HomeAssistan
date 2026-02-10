@@ -19,15 +19,19 @@ import {
   LogOut as LogOutIcon,
   ChevronDown,
   Save,
+  Plus,
+  Trash2,
+  X,
 } from "lucide-react";
 
-type Tab = "stats" | "users" | "logs" | "config";
+type Tab = "stats" | "houses" | "users" | "logs" | "config";
 
 export function AdminPage() {
   const [tab, setTab] = useState<Tab>("stats");
 
   const tabs: { key: Tab; label: string; icon: typeof BarChart3 }[] = [
     { key: "stats", label: "Resumen", icon: BarChart3 },
+    { key: "houses", label: "Casas", icon: Home },
     { key: "users", label: "Usuarios", icon: Users },
     { key: "logs", label: "Actividad", icon: FileText },
     { key: "config", label: "Configuración", icon: SettingsIcon },
@@ -61,6 +65,7 @@ export function AdminPage() {
       </div>
 
       {tab === "stats" && <StatsSection />}
+      {tab === "houses" && <HousesSection />}
       {tab === "users" && <UsersSection />}
       {tab === "logs" && <LogsSection />}
       {tab === "config" && <ConfigSection />}
@@ -142,6 +147,179 @@ function StatsSection() {
 }
 
 // ══════════════════════════════════════════════
+// GESTIÓN DE CASAS
+// ══════════════════════════════════════════════
+
+interface AdminHouse {
+  id: string;
+  name: string;
+  address: string | null;
+}
+
+function HousesSection() {
+  const qc = useQueryClient();
+  const [showCreate, setShowCreate] = useState(false);
+  const [form, setForm] = useState({ name: "", address: "", pin: "", confirmPin: "" });
+
+  const { data: housesList = [] } = useQuery<AdminHouse[]>({
+    queryKey: ["admin-houses"],
+    queryFn: async () => {
+      const { data } = await api.get<ApiResponse<AdminHouse[]>>("/houses");
+      return data.data!;
+    },
+  });
+
+  const createHouse = useMutation({
+    mutationFn: async (body: { name: string; address?: string; pin: string }) => {
+      await api.post("/houses", body);
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-houses"] });
+      qc.invalidateQueries({ queryKey: ["admin-stats"] });
+      toast.success("Casa creada");
+      setShowCreate(false);
+      setForm({ name: "", address: "", pin: "", confirmPin: "" });
+    },
+    onError: () => toast.error("Error al crear casa"),
+  });
+
+  const deleteHouse = useMutation({
+    mutationFn: async (id: string) => {
+      await api.delete(`/houses/${id}`);
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-houses"] });
+      qc.invalidateQueries({ queryKey: ["admin-stats"] });
+      toast.success("Casa eliminada");
+    },
+    onError: () => toast.error("Error al eliminar casa"),
+  });
+
+  const handleCreate = () => {
+    if (!form.name.trim()) return toast.error("Nombre requerido");
+    if (form.pin.length < 4) return toast.error("PIN mínimo 4 dígitos");
+    if (form.pin !== form.confirmPin) return toast.error("Los PINs no coinciden");
+    createHouse.mutate({ name: form.name.trim(), address: form.address.trim() || undefined, pin: form.pin });
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h2 className="font-semibold text-slate-900 dark:text-white">
+          Casas del sistema ({housesList.length})
+        </h2>
+        <button
+          onClick={() => setShowCreate(true)}
+          className="flex items-center gap-1.5 px-3 py-2 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600"
+        >
+          <Plus className="w-4 h-4" /> Crear Casa
+        </button>
+      </div>
+
+      <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-slate-200 dark:border-slate-700">
+                <th className="text-left px-4 py-3 text-xs text-slate-500 font-medium">Nombre</th>
+                <th className="text-left px-4 py-3 text-xs text-slate-500 font-medium">Dirección</th>
+                <th className="text-left px-4 py-3 text-xs text-slate-500 font-medium">ID</th>
+                <th className="text-left px-4 py-3 text-xs text-slate-500 font-medium">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {housesList.map((h) => (
+                <tr key={h.id} className="border-b border-slate-100 dark:border-slate-700/50">
+                  <td className="px-4 py-2.5 font-medium text-slate-900 dark:text-white">{h.name}</td>
+                  <td className="px-4 py-2.5 text-slate-600 dark:text-slate-400">{h.address ?? "—"}</td>
+                  <td className="px-4 py-2.5 text-slate-400 text-xs font-mono">{h.id.slice(0, 8)}…</td>
+                  <td className="px-4 py-2.5">
+                    <button
+                      onClick={() => {
+                        if (confirm(`¿Eliminar la casa "${h.name}"? Se perderán todos los datos asociados.`))
+                          deleteHouse.mutate(h.id);
+                      }}
+                      className="p-1.5 text-slate-400 hover:text-red-500 rounded hover:bg-red-50 dark:hover:bg-red-900/20"
+                      title="Eliminar casa"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+              {housesList.length === 0 && (
+                <tr>
+                  <td colSpan={4} className="px-4 py-8 text-center text-slate-400">Sin casas</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Modal Crear Casa */}
+      {showCreate && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 w-full max-w-md space-y-4 shadow-xl">
+            <div className="flex items-center justify-between">
+              <h3 className="font-semibold text-slate-900 dark:text-white">Nueva Casa</h3>
+              <button onClick={() => setShowCreate(false)} className="text-slate-400 hover:text-slate-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="space-y-3">
+              <input
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                placeholder="Nombre de la casa *"
+                className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm"
+              />
+              <input
+                value={form.address}
+                onChange={(e) => setForm({ ...form, address: e.target.value })}
+                placeholder="Dirección (opcional)"
+                className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm"
+              />
+              <input
+                type="password"
+                value={form.pin}
+                onChange={(e) => setForm({ ...form, pin: e.target.value })}
+                placeholder="PIN de acceso (4-8 dígitos) *"
+                className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm"
+                maxLength={8}
+              />
+              <input
+                type="password"
+                value={form.confirmPin}
+                onChange={(e) => setForm({ ...form, confirmPin: e.target.value })}
+                placeholder="Confirmar PIN *"
+                className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm"
+                maxLength={8}
+              />
+            </div>
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => setShowCreate(false)}
+                className="px-4 py-2 text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleCreate}
+                disabled={createHouse.isPending}
+                className="px-4 py-2 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50"
+              >
+                {createHouse.isPending ? "Creando…" : "Crear"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════
 // GESTIÓN DE USUARIOS
 // ══════════════════════════════════════════════
 
@@ -163,11 +341,25 @@ function UsersSection() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [newRole, setNewRole] = useState("");
   const [filter, setFilter] = useState("");
+  const [showCreate, setShowCreate] = useState(false);
+  const [userForm, setUserForm] = useState({
+    name: "", email: "", personalPin: "", confirmPin: "",
+    profileType: "power" as "power" | "focus",
+    houseId: "", role: "member",
+  });
 
   const { data: users = [] } = useQuery<AdminUser[]>({
     queryKey: ["admin-users"],
     queryFn: async () => {
       const { data } = await api.get<ApiResponse<AdminUser[]>>("/admin/users");
+      return data.data!;
+    },
+  });
+
+  const { data: houseOptions = [] } = useQuery<{ id: string; name: string }[]>({
+    queryKey: ["admin-houses"],
+    queryFn: async () => {
+      const { data } = await api.get<ApiResponse<{ id: string; name: string }[]>>("/houses");
       return data.data!;
     },
   });
@@ -192,6 +384,50 @@ function UsersSection() {
     onError: () => toast.error("Error al revocar"),
   });
 
+  const createUser = useMutation({
+    mutationFn: async (body: {
+      name: string; email?: string; personalPin: string;
+      profileType: string; houseId: string; role: string;
+    }) => {
+      await api.post("/users", body);
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-users"] });
+      qc.invalidateQueries({ queryKey: ["admin-stats"] });
+      toast.success("Usuario creado");
+      setShowCreate(false);
+      setUserForm({ name: "", email: "", personalPin: "", confirmPin: "", profileType: "power", houseId: "", role: "member" });
+    },
+    onError: () => toast.error("Error al crear usuario"),
+  });
+
+  const deleteUser = useMutation({
+    mutationFn: async (userId: string) => {
+      await api.delete(`/users/${userId}`);
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-users"] });
+      qc.invalidateQueries({ queryKey: ["admin-stats"] });
+      toast.success("Usuario eliminado");
+    },
+    onError: () => toast.error("Error al eliminar usuario"),
+  });
+
+  const handleCreateUser = () => {
+    if (!userForm.name.trim()) return toast.error("Nombre requerido");
+    if (userForm.personalPin.length < 4) return toast.error("PIN mínimo 4 dígitos");
+    if (userForm.personalPin !== userForm.confirmPin) return toast.error("Los PINs no coinciden");
+    if (!userForm.houseId) return toast.error("Selecciona una casa");
+    createUser.mutate({
+      name: userForm.name.trim(),
+      email: userForm.email.trim() || undefined,
+      personalPin: userForm.personalPin,
+      profileType: userForm.profileType,
+      houseId: userForm.houseId,
+      role: userForm.role,
+    });
+  };
+
   const filtered = users.filter(
     (u) =>
       u.name.toLowerCase().includes(filter.toLowerCase()) ||
@@ -207,12 +443,20 @@ function UsersSection() {
         <h2 className="font-semibold text-slate-900 dark:text-white">
           Usuarios del sistema ({users.length})
         </h2>
-        <input
-          value={filter}
-          onChange={(e) => setFilter(e.target.value)}
-          placeholder="Buscar por nombre, email o casa..."
-          className="px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm w-full sm:w-64"
-        />
+        <div className="flex gap-2 items-center">
+          <input
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            placeholder="Buscar por nombre, email o casa..."
+            className="px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm w-full sm:w-64"
+          />
+          <button
+            onClick={() => setShowCreate(true)}
+            className="flex items-center gap-1.5 px-3 py-2 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 whitespace-nowrap"
+          >
+            <Plus className="w-4 h-4" /> Crear
+          </button>
+        </div>
       </div>
 
       <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
@@ -313,6 +557,16 @@ function UsersSection() {
                       >
                         <LogOutIcon className="w-3.5 h-3.5" />
                       </button>
+                      <button
+                        onClick={() => {
+                          if (confirm(`¿Eliminar al usuario "${u.name}"? Esta acción es irreversible.`))
+                            deleteUser.mutate(u.id);
+                        }}
+                        className="p-1.5 text-slate-400 hover:text-red-500 rounded hover:bg-red-50 dark:hover:bg-red-900/20"
+                        title="Eliminar usuario"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -328,6 +582,97 @@ function UsersSection() {
           </table>
         </div>
       </div>
+
+      {/* Modal Crear Usuario */}
+      {showCreate && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 w-full max-w-md space-y-4 shadow-xl">
+            <div className="flex items-center justify-between">
+              <h3 className="font-semibold text-slate-900 dark:text-white">Nuevo Usuario</h3>
+              <button onClick={() => setShowCreate(false)} className="text-slate-400 hover:text-slate-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="space-y-3">
+              <input
+                value={userForm.name}
+                onChange={(e) => setUserForm({ ...userForm, name: e.target.value })}
+                placeholder="Nombre *"
+                className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm"
+              />
+              <input
+                value={userForm.email}
+                onChange={(e) => setUserForm({ ...userForm, email: e.target.value })}
+                placeholder="Email (opcional)"
+                type="email"
+                className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm"
+              />
+              <div className="grid grid-cols-2 gap-3">
+                <input
+                  type="password"
+                  value={userForm.personalPin}
+                  onChange={(e) => setUserForm({ ...userForm, personalPin: e.target.value })}
+                  placeholder="PIN (4-8 dígitos) *"
+                  className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm"
+                  maxLength={8}
+                />
+                <input
+                  type="password"
+                  value={userForm.confirmPin}
+                  onChange={(e) => setUserForm({ ...userForm, confirmPin: e.target.value })}
+                  placeholder="Confirmar PIN *"
+                  className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm"
+                  maxLength={8}
+                />
+              </div>
+              <select
+                value={userForm.houseId}
+                onChange={(e) => setUserForm({ ...userForm, houseId: e.target.value })}
+                className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm"
+              >
+                <option value="">Seleccionar casa *</option>
+                {houseOptions.map((h) => (
+                  <option key={h.id} value={h.id}>{h.name}</option>
+                ))}
+              </select>
+              <div className="grid grid-cols-2 gap-3">
+                <select
+                  value={userForm.role}
+                  onChange={(e) => setUserForm({ ...userForm, role: e.target.value })}
+                  className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm"
+                >
+                  {Object.entries(ROLE_LABELS).filter(([k]) => k !== "pet").map(([k, v]) => (
+                    <option key={k} value={k}>{v}</option>
+                  ))}
+                </select>
+                <select
+                  value={userForm.profileType}
+                  onChange={(e) => setUserForm({ ...userForm, profileType: e.target.value as "power" | "focus" })}
+                  className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm"
+                >
+                  <option value="power">Power</option>
+                  <option value="focus">Focus</option>
+                </select>
+              </div>
+            </div>
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => setShowCreate(false)}
+                className="px-4 py-2 text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleCreateUser}
+                disabled={createUser.isPending}
+                className="px-4 py-2 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50"
+              >
+                {createUser.isPending ? "Creando…" : "Crear"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

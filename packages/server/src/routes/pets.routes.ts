@@ -5,7 +5,7 @@
 import { Router, type Router as RouterType } from "express";
 import { z } from "zod";
 import { validate } from "../middleware/validate";
-import { authenticate, authorize, belongsToHouse } from "../middleware/auth";
+import { authenticate, requirePermission } from "../middleware/auth";
 import * as petsService from "../services/pets.service";
 import type { ApiResponse } from "@homeassistan/shared";
 
@@ -42,9 +42,7 @@ const updatePetSchema = z.object({
 // ── GET /api/pets — Listar mascotas de la casa ──
 petsRouter.get(
   "/",
-  authenticate,
-  authorize("admin", "responsible", "member"),
-  belongsToHouse(),
+  requirePermission("pets", "viewPets"),
   async (req, res, next) => {
     try {
       const houseId = req.user!.houseId;
@@ -64,9 +62,7 @@ petsRouter.get(
 // ── GET /api/pets/:id — Detalle de mascota ──
 petsRouter.get(
   "/:id",
-  authenticate,
-  authorize("admin", "responsible", "member"),
-  belongsToHouse(),
+  requirePermission("pets", "viewPets"),
   async (req, res, next) => {
     try {
       const houseId = req.user!.houseId;
@@ -86,9 +82,7 @@ petsRouter.get(
 // ── POST /api/pets — Crear mascota ──
 petsRouter.post(
   "/",
-  authenticate,
-  authorize("admin", "responsible", "member"),
-  belongsToHouse(),
+  requirePermission("pets", "createPet"),
   validate(createPetSchema),
   async (req, res, next) => {
     try {
@@ -115,9 +109,7 @@ petsRouter.post(
 // ── PATCH /api/pets/:id — Actualizar mascota ──
 petsRouter.patch(
   "/:id",
-  authenticate,
-  authorize("admin", "responsible", "member"),
-  belongsToHouse(),
+  requirePermission("pets", "editPet"),
   validate(updatePetSchema),
   async (req, res, next) => {
     try {
@@ -138,9 +130,7 @@ petsRouter.patch(
 // ── DELETE /api/pets/:id — Eliminar mascota ──
 petsRouter.delete(
   "/:id",
-  authenticate,
-  authorize("admin", "responsible"),
-  belongsToHouse(),
+  requirePermission("pets", "deletePet"),
   async (req, res, next) => {
     try {
       const houseId = req.user!.houseId;

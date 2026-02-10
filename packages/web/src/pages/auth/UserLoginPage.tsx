@@ -80,6 +80,12 @@ export function UserLoginPage() {
     return null;
   }
 
+  // Si no hay miembros (recarga de página), volver a selección de casa
+  if (members.length === 0) {
+    navigate("/auth/house", { replace: true });
+    return null;
+  }
+
   return (
     <div className="bg-white/10 backdrop-blur-lg rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-white/10">
       {/* Header */}

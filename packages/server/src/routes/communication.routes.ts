@@ -104,7 +104,9 @@ communicationRouter.delete(
 
 communicationRouter.get("/messages", requirePermission("communication", "readLimitedHistory"), async (req, res, next) => {
   try {
-    const data = await commService.getMessages(req.user!.houseId, 100, req.user!.role);
+    const limit = Math.min(Number(req.query.limit) || 100, 200);
+    const offset = Number(req.query.offset) || 0;
+    const data = await commService.getMessages(req.user!.houseId, limit, req.user!.role, offset);
     const response: ApiResponse = { success: true, data };
     res.json(response);
   } catch (error) {

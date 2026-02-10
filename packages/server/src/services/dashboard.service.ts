@@ -13,6 +13,7 @@ import {
   expenses,
   users,
   houseMembers,
+  notifications,
 } from "@homeassistan/database";
 import type { UpdatePreferencesRequest, Role } from "@homeassistan/shared";
 import { hasPermission } from "@homeassistan/shared";
@@ -76,10 +77,25 @@ export async function getDashboardStats(houseId: string, userId?: string, role?:
       ),
     );
 
+  // Real unread notifications count
+  let unreadCount = 0;
+  if (userId) {
+    const [unreadR] = await db
+      .select({ count: count() })
+      .from(notifications)
+      .where(
+        and(
+          eq(notifications.userId, userId),
+          eq(notifications.isRead, false),
+        ),
+      );
+    unreadCount = unreadR?.count ?? 0;
+  }
+
   return {
     pendingTasks: pendingTasksR?.count ?? 0,
     todayEvents: todayEventsR?.count ?? 0,
-    unreadNotifications: 0,
+    unreadNotifications: unreadCount,
     lowStockMeds: lowStockR?.count ?? 0,
     monthExpenses,
     houseMembersCount: membersR?.count ?? 0,

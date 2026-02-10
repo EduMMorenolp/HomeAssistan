@@ -29,6 +29,11 @@ const PendingApprovalPage = lazy(() =>
     default: m.PendingApprovalPage,
   })),
 );
+const CreateHousePage = lazy(() =>
+  import("@/pages/auth/CreateHousePage").then((m) => ({
+    default: m.CreateHousePage,
+  })),
+);
 
 // Pages - App (lazy loaded)
 const DashboardPage = lazy(() =>
@@ -85,6 +90,7 @@ export function App() {
           <Route path="/auth/activate" element={<ActivateAccountPage />} />
           <Route path="/auth/register" element={<SelfRegisterPage />} />
           <Route path="/auth/pending" element={<PendingApprovalPage />} />
+          <Route path="/auth/house/create" element={<CreateHousePage />} />
         </Route>
 
         {/* ── App (requiere autenticación) ─────── */}

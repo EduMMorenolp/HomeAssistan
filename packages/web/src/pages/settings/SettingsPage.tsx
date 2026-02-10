@@ -91,6 +91,11 @@ function ProfileSection() {
       await api.patch(`/users/${userId}`, { name: name.trim() });
     },
     onSuccess: () => {
+      // Update the store so Sidebar/TopBar reflect the new name
+      const current = useAuthStore.getState().user;
+      if (current) {
+        useAuthStore.setState({ user: { ...current, name: name.trim() } });
+      }
       toast.success("Perfil actualizado");
       setSaving(false);
     },

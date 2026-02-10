@@ -7,6 +7,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { usePermissions } from "@/hooks/usePermissions";
 import {
   Plus,
   Wallet,
@@ -19,6 +20,7 @@ import {
   X,
   TrendingUp,
   AlertTriangle,
+  Pencil,
 } from "lucide-react";
 import type {
   ExpenseInfo,
@@ -91,7 +93,11 @@ export function FinancePage() {
 
 function ExpensesSection() {
   const [showForm, setShowForm] = useState(false);
+  const [editingExpense, setEditingExpense] = useState<ExpenseInfo | null>(null);
+  const [page, setPage] = useState(0);
+  const PAGE_SIZE = 20;
   const queryClient = useQueryClient();
+  const { can } = usePermissions();
 
   const { data: summary, isLoading: loadingSummary } = useQuery({
     queryKey: ["expense-summary"],
@@ -102,9 +108,9 @@ function ExpensesSection() {
   });
 
   const { data: expenses, isLoading } = useQuery({
-    queryKey: ["expenses"],
+    queryKey: ["expenses", page],
     queryFn: async () => {
-      const { data } = await api.get("/finance/expenses");
+      const { data } = await api.get(`/finance/expenses?limit=${PAGE_SIZE}&offset=${page * PAGE_SIZE}`);
       return data.data as ExpenseInfo[];
     },
   });
@@ -213,15 +219,17 @@ function ExpensesSection() {
       )}
 
       {/* Botón añadir */}
-      <div className="flex justify-end">
-        <button
-          onClick={() => setShowForm(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-sm font-medium transition-colors"
-        >
-          <Plus className="w-4 h-4" />
-          Registrar gasto
-        </button>
-      </div>
+      {can("finance", "addExpense") && (
+        <div className="flex justify-end">
+          <button
+            onClick={() => setShowForm(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-sm font-medium transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            Registrar gasto
+          </button>
+        </div>
+      )}
 
       {/* Lista */}
       {isLoading ? (
@@ -260,21 +268,59 @@ function ExpensesSection() {
               <span className="font-bold text-slate-900 dark:text-white text-sm sm:text-base whitespace-nowrap">
                 ${parseFloat(exp.amount).toFixed(2)}
               </span>
-              <button
-                onClick={() => {
-                  if (confirm("¿Eliminar este gasto?")) deleteMutation.mutate(exp.id);
-                }}
-                className="text-slate-300 hover:text-red-500 dark:text-slate-600 dark:hover:text-red-400 transition-colors shrink-0"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
+              {can("finance", "editExpense") && (
+                <button
+                  onClick={() => { setEditingExpense(exp); }}
+                  className="text-slate-300 hover:text-blue-500 dark:text-slate-600 dark:hover:text-blue-400 transition-colors shrink-0"
+                >
+                  <Pencil className="w-4 h-4" />
+                </button>
+              )}
+              {can("finance", "deleteExpense") && (
+                <button
+                  onClick={() => {
+                    if (confirm("¿Eliminar este gasto?")) deleteMutation.mutate(exp.id);
+                  }}
+                  className="text-slate-300 hover:text-red-500 dark:text-slate-600 dark:hover:text-red-400 transition-colors shrink-0"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              )}
             </div>
           ))}
         </div>
       )}
 
+      {/* Paginación */}
+      {expenses && expenses.length > 0 && (
+        <div className="flex items-center justify-center gap-3">
+          <button
+            onClick={() => setPage((p) => Math.max(0, p - 1))}
+            disabled={page === 0}
+            className="px-3 py-1.5 text-sm rounded-lg border border-slate-200 dark:border-slate-700 disabled:opacity-40"
+          >
+            ← Anterior
+          </button>
+          <span className="text-xs text-slate-500">Página {page + 1}</span>
+          <button
+            onClick={() => setPage((p) => p + 1)}
+            disabled={expenses.length < PAGE_SIZE}
+            className="px-3 py-1.5 text-sm rounded-lg border border-slate-200 dark:border-slate-700 disabled:opacity-40"
+          >
+            Siguiente →
+          </button>
+        </div>
+      )}
+
       {/* Modal añadir gasto */}
       {showForm && <CreateExpenseModal onClose={() => setShowForm(false)} />}
+      {/* Modal editar gasto */}
+      {editingExpense && (
+        <EditExpenseModal
+          expense={editingExpense}
+          onClose={() => setEditingExpense(null)}
+        />
+      )}
     </div>
   );
 }
@@ -411,6 +457,90 @@ function CreateExpenseModal({ onClose }: { onClose: () => void }) {
             Registrar gasto
           </button>
         </form>
+      </div>
+    </div>
+  );
+}
+
+// ── Modal: Editar gasto ──────────────────────
+
+function EditExpenseModal({ expense, onClose }: { expense: ExpenseInfo; onClose: () => void }) {
+  const queryClient = useQueryClient();
+  const [form, setForm] = useState({
+    description: expense.description,
+    amount: parseFloat(expense.amount),
+    category: expense.category as ExpenseCategory,
+    note: expense.note ?? "",
+  });
+
+  const mutation = useMutation({
+    mutationFn: async () => {
+      await api.patch(`/finance/expenses/${expense.id}`, {
+        description: form.description.trim(),
+        amount: form.amount,
+        category: form.category,
+        note: form.note || undefined,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["expenses"] });
+      queryClient.invalidateQueries({ queryKey: ["expense-summary"] });
+      toast.success("Gasto actualizado");
+      onClose();
+    },
+    onError: () => toast.error("Error al actualizar"),
+  });
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+      <div className="relative bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-md">
+        <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-700">
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Editar gasto</h2>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700">
+            <X className="w-5 h-5 text-slate-500" />
+          </button>
+        </div>
+        <div className="p-4 space-y-4">
+          <input
+            value={form.description}
+            onChange={(e) => setForm({ ...form, description: e.target.value })}
+            className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm"
+            placeholder="Descripción"
+          />
+          <div className="grid grid-cols-2 gap-3">
+            <input
+              type="number"
+              step="0.01"
+              value={form.amount || ""}
+              onChange={(e) => setForm({ ...form, amount: parseFloat(e.target.value) || 0 })}
+              className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm"
+            />
+            <select
+              value={form.category}
+              onChange={(e) => setForm({ ...form, category: e.target.value as ExpenseCategory })}
+              className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm"
+            >
+              {(Object.entries(EXPENSE_CATEGORY_LABELS) as [ExpenseCategory, string][]).map(([k, v]) => (
+                <option key={k} value={k}>{v}</option>
+              ))}
+            </select>
+          </div>
+          <textarea
+            value={form.note}
+            onChange={(e) => setForm({ ...form, note: e.target.value })}
+            placeholder="Nota (opcional)"
+            rows={2}
+            className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm"
+          />
+          <button
+            onClick={() => mutation.mutate()}
+            disabled={mutation.isPending || !form.description.trim() || form.amount <= 0}
+            className="w-full py-2.5 bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white rounded-lg text-sm font-medium"
+          >
+            {mutation.isPending ? "Guardando…" : "Guardar cambios"}
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -616,9 +746,9 @@ function ShoppingItemRow({
 
 function InventorySection() {
   const [showForm, setShowForm] = useState(false);
-  // TODO: habilitar edición de ítems de inventario
-  // const [editingItem, setEditingItem] = useState<HouseholdItemInfo | null>(null);
+  const [editingItem, setEditingItem] = useState<HouseholdItemInfo | null>(null);
   const queryClient = useQueryClient();
+  const { can } = usePermissions();
 
   const { data: items, isLoading } = useQuery({
     queryKey: ["inventory"],
@@ -680,15 +810,17 @@ function InventorySection() {
       )}
 
       {/* Botón añadir */}
-      <div className="flex justify-end">
-        <button
-          onClick={() => setShowForm(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg text-sm font-medium transition-colors"
-        >
-          <Plus className="w-4 h-4" />
-          Añadir artículo
-        </button>
-      </div>
+      {can("finance", "manageInventory") && (
+        <div className="flex justify-end">
+          <button
+            onClick={() => setShowForm(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg text-sm font-medium transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            Añadir artículo
+          </button>
+        </div>
+      )}
 
       {isLoading ? (
         <div className="flex justify-center py-12">
@@ -718,14 +850,27 @@ function InventorySection() {
                   </h4>
                   {item.category && <p className="text-xs text-slate-400">{item.category}</p>}
                 </div>
-                <button
-                  onClick={() => {
-                    if (confirm("¿Eliminar?")) deleteMutation.mutate(item.id);
-                  }}
-                  className="text-slate-300 hover:text-red-500 dark:text-slate-600 dark:hover:text-red-400 transition-colors shrink-0"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
+                <div className="flex items-center gap-1 shrink-0">
+                  {can("finance", "manageInventory") && (
+                    <button
+                      onClick={() => setEditingItem(item)}
+                      className="text-slate-300 hover:text-blue-500 dark:text-slate-600 dark:hover:text-blue-400 transition-colors"
+                      title="Editar"
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </button>
+                  )}
+                  {can("finance", "manageInventory") && (
+                    <button
+                      onClick={() => {
+                        if (confirm("¿Eliminar?")) deleteMutation.mutate(item.id);
+                      }}
+                      className="text-slate-300 hover:text-red-500 dark:text-slate-600 dark:hover:text-red-400 transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
               </div>
 
               {/* Cantidad con botones +/- */}
@@ -778,6 +923,10 @@ function InventorySection() {
 
       {/* Modal crear */}
       {showForm && <CreateInventoryModal onClose={() => setShowForm(false)} />}
+      {/* Modal editar */}
+      {editingItem && (
+        <EditInventoryModal item={editingItem} onClose={() => setEditingItem(null)} />
+      )}
     </div>
   );
 }
@@ -920,6 +1069,77 @@ function CreateInventoryModal({ onClose }: { onClose: () => void }) {
             Añadir artículo
           </button>
         </form>
+      </div>
+    </div>
+  );
+}
+
+// ── Modal: Editar artículo de inventario ─────
+
+function EditInventoryModal({ item, onClose }: { item: HouseholdItemInfo; onClose: () => void }) {
+  const queryClient = useQueryClient();
+  const [form, setForm] = useState<UpdateHouseholdItemRequest>({
+    name: item.name,
+    quantity: item.quantity,
+    minQuantity: item.minQuantity,
+    category: item.category ?? "",
+    unit: item.unit ?? "",
+    location: item.location ?? "",
+  });
+
+  const mutation = useMutation({
+    mutationFn: async () => {
+      await api.patch(`/finance/inventory/${item.id}`, {
+        ...form,
+        name: form.name?.trim(),
+        category: form.category || undefined,
+        unit: form.unit || undefined,
+        location: form.location || undefined,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["inventory"] });
+      toast.success("Artículo actualizado");
+      onClose();
+    },
+    onError: () => toast.error("Error al actualizar"),
+  });
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+      <div className="relative bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-md">
+        <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-700">
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Editar artículo</h2>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700">
+            <X className="w-5 h-5 text-slate-500" />
+          </button>
+        </div>
+        <div className="p-4 space-y-4">
+          <input value={form.name ?? ""} onChange={(e) => setForm({ ...form, name: e.target.value })} className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm" placeholder="Nombre" />
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs text-slate-500 mb-1 block">Cantidad</label>
+              <input type="number" min={0} value={form.quantity ?? 0} onChange={(e) => setForm({ ...form, quantity: parseInt(e.target.value) || 0 })} className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm" />
+            </div>
+            <div>
+              <label className="text-xs text-slate-500 mb-1 block">Mínimo</label>
+              <input type="number" min={0} value={form.minQuantity ?? 0} onChange={(e) => setForm({ ...form, minQuantity: parseInt(e.target.value) || 0 })} className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm" />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <input value={form.category ?? ""} onChange={(e) => setForm({ ...form, category: e.target.value })} placeholder="Categoría" className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm" />
+            <input value={form.unit ?? ""} onChange={(e) => setForm({ ...form, unit: e.target.value })} placeholder="Unidad" className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm" />
+          </div>
+          <input value={form.location ?? ""} onChange={(e) => setForm({ ...form, location: e.target.value })} placeholder="Ubicación" className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm" />
+          <button
+            onClick={() => mutation.mutate()}
+            disabled={mutation.isPending || !form.name?.trim()}
+            className="w-full py-2.5 bg-purple-500 hover:bg-purple-600 disabled:opacity-50 text-white rounded-lg text-sm font-medium"
+          >
+            {mutation.isPending ? "Guardando…" : "Guardar cambios"}
+          </button>
+        </div>
       </div>
     </div>
   );

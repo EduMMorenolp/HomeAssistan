@@ -2,7 +2,7 @@
 // Calendar Service
 // ══════════════════════════════════════════════
 
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, desc, gte, lte } from "drizzle-orm";
 import { db, events, eventAttendees, users } from "@homeassistan/database";
 import type { CreateEventRequest, UpdateEventRequest } from "@homeassistan/shared";
 import { AppError } from "../middleware/error-handler";
@@ -10,7 +10,11 @@ import { AppError } from "../middleware/error-handler";
 // ── CRUD Eventos ─────────────────────────────
 
 export async function getEvents(houseId: string, _from?: Date, _to?: Date) {
-  const query = db
+  const conditions = [eq(events.houseId, houseId)];
+  if (_from) conditions.push(gte(events.startDate, _from));
+  if (_to) conditions.push(lte(events.startDate, _to));
+
+  return db
     .select({
       id: events.id,
       title: events.title,
@@ -26,11 +30,8 @@ export async function getEvents(houseId: string, _from?: Date, _to?: Date) {
       createdAt: events.createdAt,
     })
     .from(events)
-    .where(eq(events.houseId, houseId))
-    .orderBy(desc(events.startDate))
-    .$dynamic();
-
-  return query;
+    .where(and(...conditions))
+    .orderBy(desc(events.startDate));
 }
 
 export async function getEventById(id: string, houseId: string) {

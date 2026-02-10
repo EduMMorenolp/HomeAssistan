@@ -90,7 +90,9 @@ const updateInventorySchema = z.object({
 /** Listar gastos (admin/resp: global, member: propios, simplified: propios lectura, external: sin acceso) */
 financeRouter.get("/expenses", requirePermission("finance", "viewOwnExpenses"), async (req, res, next) => {
   try {
-    const data = await financeService.getExpenses(req.user!.houseId, req.user!.userId, req.user!.role);
+    const limit = Math.min(Number(req.query.limit) || 50, 200);
+    const offset = Number(req.query.offset) || 0;
+    const data = await financeService.getExpenses(req.user!.houseId, req.user!.userId, req.user!.role, limit, offset);
     const response: ApiResponse = { success: true, data };
     res.json(response);
   } catch (error) {
