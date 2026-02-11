@@ -19,6 +19,7 @@
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
     "db:seed": "tsx src/seed.ts",
+    "db:reset": "tsx src/reset.ts",
     "clean": "rimraf dist"
   },
   "dependencies": {
