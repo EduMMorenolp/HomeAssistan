@@ -11,6 +11,9 @@ import type { ApiResponse } from "@homeassistan/shared";
 
 export const petsRouter: RouterType = Router();
 
+// Todas las rutas de pets requieren autenticación
+petsRouter.use(authenticate);
+
 // ── Schemas ──────────────────────────────────
 
 const createPetSchema = z.object({
