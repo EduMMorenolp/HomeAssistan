@@ -2,7 +2,7 @@
 // Communication Page (Anuncios, Chat, Notificaciones, Pánico)
 // ══════════════════════════════════════════════
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "react-router-dom";
 import { api } from "@/lib/api";
@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useAuthStore } from "@/stores/auth.store";
+import { useSocket } from "@/hooks/useSocket";
 import type {
   ApiResponse,
   AnnouncementInfo,
@@ -352,6 +353,8 @@ function ChatSection() {
   const qc = useQueryClient();
   const [msg, setMsg] = useState("");
   const currentUserId = useAuthStore((s) => s.user?.id);
+  const socket = useSocket();
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const { data: messages = [] } = useQuery<MessageInfo[]>({
     queryKey: ["messages"],
@@ -359,8 +362,28 @@ function ChatSection() {
       const { data } = await api.get<ApiResponse<MessageInfo[]>>("/communication/messages");
       return data.data!;
     },
-    refetchInterval: 5000,
+    // Sin polling, usamos WebSocket
   });
+
+  // Escuchar mensajes en tiempo real
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleNewMessage = (message: MessageInfo) => {
+      qc.setQueryData<MessageInfo[]>(["messages"], (old = []) => [message, ...old]);
+    };
+
+    socket.on("chat:message", handleNewMessage);
+
+    return () => {
+      socket.off("chat:message", handleNewMessage);
+    };
+  }, [socket, qc]);
+
+  // Auto-scroll al final
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   const send = useMutation({
     mutationFn: async () => {
@@ -403,6 +426,7 @@ function ChatSection() {
         {messages.length === 0 && (
           <p className="text-center py-8 text-slate-400 text-sm">Sin mensajes aún</p>
         )}
+        <div ref={messagesEndRef} />
       </div>
 
       <form
@@ -532,6 +556,7 @@ function NotificationsSection() {
 function PanicSection() {
   const qc = useQueryClient();
   const [message, setMessage] = useState("");
+  const socket = useSocket();
 
   const { data: pings = [] } = useQuery<PanicPingInfo[]>({
     queryKey: ["panic-pings"],
@@ -539,8 +564,24 @@ function PanicSection() {
       const { data } = await api.get<ApiResponse<PanicPingInfo[]>>("/communication/panic");
       return data.data!;
     },
-    refetchInterval: 3000,
+    // Sin polling, usamos WebSocket
   });
+
+  // Escuchar alertas de pánico en tiempo real
+  useEffect(() => {
+    if (!socket) return;
+
+    const handlePanicAlert = (ping: PanicPingInfo) => {
+      qc.setQueryData<PanicPingInfo[]>(["panic-pings"], (old = []) => [ping, ...old]);
+      toast.error(`🚨 Alerta de pánico de ${ping.triggeredByName}`, { duration: 10000 });
+    };
+
+    socket.on("panic:alert", handlePanicAlert);
+
+    return () => {
+      socket.off("panic:alert", handlePanicAlert);
+    };
+  }, [socket, qc]);
 
   const trigger = useMutation({
     mutationFn: async () => {

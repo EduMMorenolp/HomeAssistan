@@ -14,6 +14,7 @@ import {
 import type { CreateAnnouncementRequest, UpdateAnnouncementRequest, Role } from "@homeassistan/shared";
 import { hasPermission } from "@homeassistan/shared";
 import { AppError } from "../middleware/error-handler";
+import { getIO } from "../socket";
 
 // ══════════════════════════════════════════════
 // ANUNCIOS
@@ -120,6 +121,25 @@ export async function getMessages(houseId: string, limit = 100, role?: Role, off
 
 export async function createMessage(houseId: string, senderId: string, content: string) {
   const [row] = await db.insert(messages).values({ houseId, senderId, content }).returning();
+  
+  // Obtener nombre del sender para el evento
+  const [sender] = await db.select({ name: users.name }).from(users).where(eq(users.id, senderId));
+  
+  // Emitir evento WebSocket
+  try {
+    const io = getIO();
+    io.to(`house:${houseId}`).emit("chat:message", {
+      id: row.id,
+      content: row.content,
+      senderId: row.senderId,
+      senderName: sender?.name ?? "Usuario",
+      isEdited: row.isEdited,
+      createdAt: row.createdAt,
+    });
+  } catch (err) {
+    console.error("[Socket] Error emitting chat:message", err);
+  }
+  
   return row;
 }
 
@@ -212,6 +232,27 @@ export async function getPanicPings(houseId: string) {
 
 export async function triggerPanic(houseId: string, triggeredBy: string, message?: string) {
   const [row] = await db.insert(panicPings).values({ houseId, triggeredBy, message }).returning();
+  
+  // Obtener nombre del usuario
+  const [user] = await db.select({ name: users.name }).from(users).where(eq(users.id, triggeredBy));
+  
+  // Emitir evento WebSocket
+  try {
+    const io = getIO();
+    io.to(`house:${houseId}`).emit("panic:alert", {
+      id: row.id,
+      triggeredBy: row.triggeredBy,
+      triggeredByName: user?.name ?? "Usuario",
+      message: row.message,
+      isResolved: row.isResolved,
+      resolvedBy: row.resolvedBy,
+      resolvedAt: row.resolvedAt,
+      createdAt: row.createdAt,
+    });
+  } catch (err) {
+    console.error("[Socket] Error emitting panic:alert", err);
+  }
+  
   return row;
 }
 
