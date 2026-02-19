@@ -7,7 +7,7 @@ import { usePermissions } from "@/hooks/usePermissions";
 import { cn } from "@/lib/utils";
 import { api } from "@/lib/api";
 import { useQuery } from "@tanstack/react-query";
-import type { DashboardStats, ApiResponse } from "@homeassistan/shared";
+import type { DashboardStats, ApiResponse, EventInfo, MessageInfo, HouseholdItemInfo } from "@homeassistan/shared";
 import type { PermissionModule } from "@homeassistan/shared";
 import {
   MessageSquare,
@@ -22,6 +22,7 @@ import {
   TrendingUp,
   PawPrint,
   Plus,
+  Package,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -98,6 +99,38 @@ export function DashboardPage() {
     },
   });
 
+  // Próximos eventos
+  const { data: upcomingEvents = [] } = useQuery<EventInfo[]>({
+    queryKey: ["upcoming-events"],
+    queryFn: async () => {
+      const today = new Date().toISOString().split("T")[0];
+      const nextWeek = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
+      const { data } = await api.get<ApiResponse<EventInfo[]>>(`/calendar?from=${today}&to=${nextWeek}`);
+      return (data.data || []).slice(0, 5);
+    },
+    enabled: canAccessModule("calendar"),
+  });
+
+  // Mensajes recientes
+  const { data: recentMessages = [] } = useQuery<MessageInfo[]>({
+    queryKey: ["recent-messages"],
+    queryFn: async () => {
+      const { data } = await api.get<ApiResponse<MessageInfo[]>>("/communication/messages?limit=5");
+      return (data.data || []).slice(0, 5);
+    },
+    enabled: canAccessModule("communication"),
+  });
+
+  // Items de inventario bajo
+  const { data: lowStockItems = [] } = useQuery<HouseholdItemInfo[]>({
+    queryKey: ["low-stock-items"],
+    queryFn: async () => {
+      const { data } = await api.get<ApiResponse<HouseholdItemInfo[]>>("/finance/inventory");
+      return (data.data || []).filter((i) => i.isLow).slice(0, 5);
+    },
+    enabled: canAccessModule("finance"),
+  });
+
   return (
     <div className="space-y-4 sm:space-y-6">
       {/* Welcome */}
@@ -140,20 +173,50 @@ export function DashboardPage() {
       </div>
 
       {/* Alerts */}
-      {stats && stats.lowStockMeds > 0 && (
-        <button
-          onClick={() => navigate("/salud")}
-          className="w-full flex items-center gap-3 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl text-left hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
-        >
-          <AlertTriangle className="w-5 h-5 text-red-500 shrink-0" />
-          <div>
-            <p className="text-sm font-medium text-red-700 dark:text-red-400">
-              {stats.lowStockMeds} medicamento{stats.lowStockMeds > 1 ? "s" : ""} con stock bajo
-            </p>
-            <p className="text-xs text-red-500/70">Toca para revisar en el módulo de Salud</p>
-          </div>
-        </button>
-      )}
+      <div className="space-y-2">
+        {stats && stats.lowStockMeds > 0 && (
+          <button
+            onClick={() => navigate("/salud")}
+            className="w-full flex items-center gap-3 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl text-left hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
+          >
+            <AlertTriangle className="w-5 h-5 text-red-500 shrink-0" />
+            <div>
+              <p className="text-sm font-medium text-red-700 dark:text-red-400">
+                {stats.lowStockMeds} medicamento{stats.lowStockMeds > 1 ? "s" : ""} con stock bajo
+              </p>
+              <p className="text-xs text-red-500/70">Toca para revisar en el módulo de Salud</p>
+            </div>
+          </button>
+        )}
+        {lowStockItems.length > 0 && (
+          <button
+            onClick={() => navigate("/finanzas")}
+            className="w-full flex items-center gap-3 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-xl text-left hover:bg-yellow-100 dark:hover:bg-yellow-900/30 transition-colors"
+          >
+            <Package className="w-5 h-5 text-yellow-500 shrink-0" />
+            <div>
+              <p className="text-sm font-medium text-yellow-700 dark:text-yellow-400">
+                {lowStockItems.length} artículo{lowStockItems.length > 1 ? "s" : ""} de inventario bajo
+              </p>
+              <p className="text-xs text-yellow-600/70">{lowStockItems.map(i => i.name).join(", ")}</p>
+            </div>
+          </button>
+        )}
+        {stats && stats.unreadNotifications > 0 && (
+          <button
+            onClick={() => navigate("/comunicacion")}
+            className="w-full flex items-center gap-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl text-left hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
+          >
+            <Bell className="w-5 h-5 text-blue-500 shrink-0" />
+            <div>
+              <p className="text-sm font-medium text-blue-700 dark:text-blue-400">
+                {stats.unreadNotifications} notificación{stats.unreadNotifications > 1 ? "es" : ""} sin leer
+              </p>
+              <p className="text-xs text-blue-600/70">Toca para ver tus notificaciones</p>
+            </div>
+          </button>
+        )}
+      </div>
 
       {/* Quick Actions */}
       <div>
@@ -189,6 +252,74 @@ export function DashboardPage() {
               </button>
             ))}
         </div>
+      </div>
+
+      {/* Widgets Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Próximos eventos */}
+        {canAccessModule("calendar") && upcomingEvents.length > 0 && (
+          <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-yellow-500" />
+                Próximos eventos
+              </h3>
+              <button
+                onClick={() => navigate("/calendario")}
+                className="text-xs text-blue-500 hover:text-blue-600"
+              >
+                Ver todos →
+              </button>
+            </div>
+            <div className="space-y-2">
+              {upcomingEvents.map((e) => (
+                <div key={e.id} className="flex items-start gap-2 text-sm">
+                  <div className="w-1.5 h-1.5 rounded-full bg-yellow-500 mt-1.5 shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-slate-900 dark:text-white truncate">{e.title}</p>
+                    <p className="text-xs text-slate-500">
+                      {new Date(e.startDate).toLocaleDateString("es", { weekday: "short", day: "numeric", month: "short" })}
+                      {!e.allDay && " · " + new Date(e.startDate).toLocaleTimeString("es", { hour: "2-digit", minute: "2-digit" })}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Actividad reciente */}
+        {canAccessModule("communication") && recentMessages.length > 0 && (
+          <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                <MessageSquare className="w-4 h-4 text-blue-500" />
+                Mensajes recientes
+              </h3>
+              <button
+                onClick={() => navigate("/comunicacion")}
+                className="text-xs text-blue-500 hover:text-blue-600"
+              >
+                Ver chat →
+              </button>
+            </div>
+            <div className="space-y-2">
+              {recentMessages.map((m) => (
+                <div key={m.id} className="flex items-start gap-2 text-sm">
+                  <div className="w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center shrink-0">
+                    <span className="text-xs font-medium text-blue-600 dark:text-blue-400">
+                      {m.senderName.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-medium text-slate-600 dark:text-slate-400">{m.senderName}</p>
+                    <p className="text-sm text-slate-900 dark:text-white truncate">{m.content}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Module Cards */}
