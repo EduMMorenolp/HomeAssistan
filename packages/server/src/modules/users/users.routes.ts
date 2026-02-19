@@ -4,18 +4,19 @@
 
 import { Router, type Router as RouterType } from "express";
 import { z } from "zod";
-import { validate } from "../middleware/validate";
+import { validate } from "../../middleware/validate";
 import {
   authenticate,
   authorize,
   ownerOrRole,
   requirePermission,
   belongsToHouse,
-} from "../middleware/auth";
-import * as usersService from "../services/users.service";
-import * as authService from "../services/auth.service";
+} from "../../middleware/auth";
+import * as usersService from "./users.service";
+import * as authService from "../auth/auth.service";
 import type { ApiResponse } from "@homeassistan/shared";
 import { ROLE_HIERARCHY, type Role } from "@homeassistan/shared";
+import { AppError } from "../../middleware/error-handler";
 
 export const usersRouter: RouterType = Router();
 
@@ -72,7 +73,7 @@ usersRouter.post(
       if (targetRole === "responsible" || targetRole === "admin") {
         if (creatorRole !== "admin") {
           return next(
-            new (await import("../middleware/error-handler")).AppError(
+            new AppError(
               403,
               "FORBIDDEN",
               "Solo un administrador puede crear usuarios con rol responsable o admin",
@@ -83,7 +84,7 @@ usersRouter.post(
         // Para member/simplified/external: admin o responsible
         if (creatorRole !== "admin" && creatorRole !== "responsible") {
           return next(
-            new (await import("../middleware/error-handler")).AppError(
+            new AppError(
               403,
               "FORBIDDEN",
               "No tienes permisos para crear usuarios",

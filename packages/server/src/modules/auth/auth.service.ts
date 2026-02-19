@@ -14,7 +14,7 @@ import type {
   UserLoginResponse,
   JwtPayload,
 } from "@homeassistan/shared";
-import { AppError } from "../middleware/error-handler";
+import { AppError } from "../../middleware/error-handler";
 
 const JWT_SECRET = process.env.JWT_SECRET || "dev-secret";
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "7d";

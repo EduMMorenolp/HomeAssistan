@@ -4,9 +4,9 @@
 
 import { Router, type Router as RouterType } from "express";
 import { z } from "zod";
-import { validate } from "../middleware/validate";
-import { authenticate, requirePermission } from "../middleware/auth";
-import * as financeService from "../services/finance.service";
+import { validate } from "../../middleware/validate";
+import { authenticate, requirePermission } from "../../middleware/auth";
+import * as financeService from "./finance.service";
 import type { ApiResponse } from "@homeassistan/shared";
 
 export const financeRouter: RouterType = Router();

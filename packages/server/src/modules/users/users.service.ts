@@ -4,8 +4,8 @@
 
 import { eq, and } from "drizzle-orm";
 import { db, users, houseMembers } from "@homeassistan/database";
-import { hashPin } from "./auth.service";
-import { AppError } from "../middleware/error-handler";
+import { hashPin } from "../auth/auth.service";
+import { AppError } from "../../middleware/error-handler";
 import type { Role } from "@homeassistan/shared";
 
 /** Crear usuario y asignarlo a una casa */
@@ -127,7 +127,7 @@ export async function changePin(id: string, currentPin: string, newPin: string) 
   }
 
   // Verificar PIN actual
-  const { comparePin } = await import("./auth.service");
+  const { comparePin } = await import("../auth/auth.service");
   const valid = await comparePin(currentPin, user.personalPinHash);
   if (!valid) {
     throw new AppError(400, "INVALID_PIN", "El PIN actual es incorrecto");

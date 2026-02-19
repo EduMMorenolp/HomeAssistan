@@ -4,7 +4,7 @@
 
 import { eq } from "drizzle-orm";
 import { db, houses, houseMembers, users } from "@homeassistan/database";
-import { hashPin } from "./auth.service";
+import { hashPin } from "../modules/auth/auth.service";
 import { AppError } from "../middleware/error-handler";
 
 /** Listar casas (solo id y nombre, sin PIN) */

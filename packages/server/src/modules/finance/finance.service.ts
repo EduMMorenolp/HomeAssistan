@@ -13,7 +13,7 @@ import type {
   Role,
 } from "@homeassistan/shared";
 import { hasPermission } from "@homeassistan/shared";
-import { AppError } from "../middleware/error-handler";
+import { AppError } from "../../middleware/error-handler";
 
 // ══════════════════════════════════════════════
 // GASTOS

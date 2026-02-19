@@ -21,11 +21,7 @@ const httpServer = createServer(app);
 setupSocketIO(httpServer);
 
 httpServer.listen(PORT, "0.0.0.0", () => {
-  console.log(`
-  ╔══════════════════════════════════════╗
-  ║  🏠 HomeAsisstan Server             ║
-  ║  Running on http://0.0.0.0:${PORT}   ║
-  ║  Environment: ${process.env.NODE_ENV || "development"}       ║
-  ╚══════════════════════════════════════╝
-  `);
+  console.log(`🏠 HomeAsisstan Server             
+   Running on http://0.0.0.0:${PORT}   
+   Environment: ${process.env.NODE_ENV || "development"}`);
 });
