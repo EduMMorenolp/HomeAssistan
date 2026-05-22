@@ -52,13 +52,13 @@ homeassistan/
 ```
 
 #### 0.2 Tareas
-- [ ] Inicializar monorepo (pnpm/npm workspaces o Turborepo)
-- [ ] Configurar Vite + React + TypeScript
-- [ ] Configurar Node + Express + TypeScript
-- [ ] Setup Drizzle ORM + PostgreSQL
-- [ ] Configurar Docker Compose (Postgres + Redis)
-- [ ] Setup ESLint + Prettier
-- [ ] Configurar variables de entorno (.env.example)
+- [x] Inicializar monorepo (pnpm/npm workspaces o Turborepo)
+- [x] Configurar Vite + React + TypeScript
+- [x] Configurar Node + Express + TypeScript
+- [x] Setup Drizzle ORM + PostgreSQL
+- [x] Configurar Docker Compose (Postgres + Redis)
+- [x] Setup ESLint + Prettier
+- [x] Configurar variables de entorno (.env.example)
 
 #### 0.3 Scripts Base
 ```json
@@ -92,20 +92,20 @@ homeassistan/
 - `house_members`: house_id, user_id, role, permissions
 
 #### 1.2 Backend Features
-- [ ] API: POST /auth/house/select (seleccionar casa + PIN general)
-- [ ] API: POST /auth/user/login (login usuario + PIN personal)
-- [ ] API: POST /auth/refresh (renovar JWT)
-- [ ] Middleware de autenticación (verify JWT)
-- [ ] Middleware de permisos por rol
-- [ ] CRUD de casas (solo admin)
-- [ ] CRUD de usuarios y miembros
+- [x] API: POST /auth/house/select (seleccionar casa + PIN general)
+- [x] API: POST /auth/user/login (login usuario + PIN personal)
+- [x] API: POST /auth/refresh (renovar JWT)
+- [x] Middleware de autenticación (verify JWT)
+- [x] Middleware de permisos por rol
+- [x] CRUD de casas (solo admin)
+- [x] CRUD de usuarios y miembros
 
 #### 1.3 Frontend Features
-- [ ] Pantalla de selección de casa
-- [ ] Pantalla de login de usuario
-- [ ] Context de autenticación (user, house, role)
-- [ ] ProtectedRoute component
-- [ ] Layout base con navegación
+- [x] Pantalla de selección de casa
+- [x] Pantalla de login de usuario
+- [x] Context de autenticación (user, house, role)
+- [x] ProtectedRoute component
+- [x] Layout base con navegación
 
 ---
 
@@ -118,18 +118,18 @@ homeassistan/
 ```
 
 #### 2.2 Backend Features
-- [ ] API: GET /dashboard/public (info compartida de la casa)
-- [ ] API: GET /dashboard/private/:userId (info personal)
-- [ ] Sistema de permisos granular (RBAC)
-- [ ] Logs de actividad
+- [x] API: GET /dashboard/public (info compartida de la casa)
+- [x] API: GET /dashboard/private/:userId (info personal)
+- [x] Sistema de permisos granular (RBAC)
+- [x] Logs de actividad
 
 #### 2.3 Frontend Features
-- [ ] Dashboard público (vista de casa)
-- [ ] Dashboard privado (vista personal)
-- [ ] Componente de tarjetas modulares
-- [ ] Sistema de temas (claro/oscuro)
-- [ ] Modo "Power User" vs "Focus"
-- [ ] Navegación adaptativa por rol
+- [x] Dashboard público (vista de casa)
+- [x] Dashboard privado (vista personal)
+- [x] Componente de tarjetas modulares
+- [x] Sistema de temas (claro/oscuro)
+- [x] Modo "Power User" vs "Focus"
+- [x] Navegación adaptativa por rol
 
 ---
 
@@ -144,17 +144,17 @@ homeassistan/
 ```
 
 #### 3.2 Backend Features
-- [ ] WebSocket setup (Socket.io)
-- [ ] API: CRUD de anuncios
-- [ ] Sistema de chat en tiempo real
-- [ ] Sistema de notificaciones
-- [ ] Botón de pánico (broadcast a todos los miembros)
+- [x] WebSocket setup (Socket.io)
+- [x] API: CRUD de anuncios
+- [x] Sistema de chat en tiempo real
+- [x] Sistema de notificaciones
+- [x] Botón de pánico (broadcast a todos los miembros)
 
 #### 3.3 Frontend Features
-- [ ] Muro de anuncios con CRUD
-- [ ] Chat en tiempo real (UI simple)
-- [ ] Sistema de notificaciones (toast/banner)
-- [ ] Botón de pánico con confirmación
+- [x] Muro de anuncios con CRUD
+- [x] Chat en tiempo real (UI simple)
+- [x] Sistema de notificaciones (toast/banner)
+- [x] Botón de pánico con confirmación
 - [ ] Indicadores de usuarios online
 
 ---
@@ -171,19 +171,19 @@ homeassistan/
 ```
 
 #### 4.2 Backend Features
-- [ ] CRUD de tareas
+- [x] CRUD de tareas
 - [ ] Sistema de asignación (manual/automático)
 - [ ] Motor de rotación automática
-- [ ] API de gamificación (puntos, rankings)
-- [ ] Notificaciones de tareas pendientes
+- [x] API de gamificación (puntos, rankings)
+- [x] Notificaciones de tareas pendientes
 
 #### 4.3 Frontend Features
-- [ ] Lista de tareas (vista por usuario)
-- [ ] Crear/editar tareas
-- [ ] Marcar tareas como completadas
+- [x] Lista de tareas (vista por usuario)
+- [x] Crear/editar tareas
+- [x] Marcar tareas como completadas
 - [ ] Configurar rotaciones
-- [ ] Dashboard de gamificación
-- [ ] Historial de tareas
+- [x] Dashboard de gamificación
+- [x] Historial de tareas
 
 ---
 
@@ -196,16 +196,16 @@ homeassistan/
 ```
 
 #### 5.2 Backend Features
-- [ ] CRUD de eventos
+- [x] CRUD de eventos
 - [ ] Gestión de asistentes
 - [ ] API de sincronización (Google Calendar)
 - [ ] Recordatorios automáticos
 
 #### 5.3 Frontend Features
-- [ ] Vista de calendario (mes/semana/día)
-- [ ] Crear/editar eventos
+- [x] Vista de calendario (mes/semana/día)
+- [x] Crear/editar eventos
 - [ ] Invitar miembros a eventos
-- [ ] Filtros por tipo de evento
+- [x] Filtros por tipo de evento
 
 ---
 
@@ -219,18 +219,18 @@ homeassistan/
 ```
 
 #### 6.2 Backend Features
-- [ ] CRUD de gastos
-- [ ] Reportes de gastos (por mes/categoría)
-- [ ] CRUD de lista de compras
-- [ ] Inventario de artículos del hogar
-- [ ] Permisos de visibilidad por rol
+- [x] CRUD de gastos
+- [x] Reportes de gastos (por mes/categoría)
+- [x] CRUD de lista de compras
+- [x] Inventario de artículos del hogar
+- [x] Permisos de visibilidad por rol
 
 #### 6.3 Frontend Features
-- [ ] Registro de gastos
-- [ ] Dashboard de finanzas
-- [ ] Lista de compras compartida
-- [ ] Gestión de inventario
-- [ ] Gráficas de gastos
+- [x] Registro de gastos
+- [x] Dashboard de finanzas
+- [x] Lista de compras compartida
+- [x] Gestión de inventario
+- [x] Gráficas de gastos
 
 ---
 
@@ -245,18 +245,18 @@ homeassistan/
 ```
 
 #### 7.2 Backend Features
-- [ ] CRUD de perfiles de salud (encriptado)
-- [ ] Gestión de medicamentos
-- [ ] Sistema de recordatorios de medicación
-- [ ] CRUD de rutinas
-- [ ] Alertas de stock bajo
+- [x] CRUD de perfiles de salud (encriptado)
+- [x] Gestión de medicamentos
+- [x] Sistema de recordatorios de medicación
+- [x] CRUD de rutinas
+- [x] Alertas de stock bajo
 
 #### 7.3 Frontend Features
-- [ ] Formulario de perfil clínico
-- [ ] Gestión de medicamentos
-- [ ] Recordatorios visuales
-- [ ] Tracker de rutinas
-- [ ] Dashboard de salud
+- [x] Formulario de perfil clínico
+- [x] Gestión de medicamentos
+- [x] Recordatorios visuales
+- [x] Tracker de rutinas
+- [x] Dashboard de salud
 
 ---
 
@@ -271,30 +271,30 @@ homeassistan/
 ```
 
 #### 8.2 Backend Features
-- [ ] Gestión de contactos de emergencia
-- [ ] Bóveda encriptada (AES-256)
-- [ ] Generación de códigos temporales
-- [ ] Sistema de logs de acceso
-- [ ] Botón S.O.S. (notificación externa)
+- [x] Gestión de contactos de emergencia
+- [x] Bóveda encriptada (AES-256)
+- [x] Generación de códigos temporales
+- [x] Sistema de logs de acceso
+- [x] Botón S.O.S. (notificación externa)
 
 #### 8.3 Frontend Features
-- [ ] Configuración de emergencias
-- [ ] Bóveda de contraseñas/códigos
-- [ ] Generador de códigos para invitados
-- [ ] Botón S.O.S. prominente
-- [ ] Visor de logs de acceso (admin)
+- [x] Configuración de emergencias
+- [x] Bóveda de contraseñas/códigos
+- [x] Generador de códigos para invitados
+- [x] Botón S.O.S. prominente
+- [x] Visor de logs de acceso (admin)
 
 ---
 
 ### **FASE 9: Optimización y Accesibilidad (Semanas 17-18)**
 
 #### 9.1 Tareas
-- [ ] Implementar modo "Focus" (UI simplificada)
-- [ ] Accesibilidad (ARIA, navegación por teclado)
-- [ ] Optimización de rendimiento
+- [x] Implementar modo "Focus" (UI simplificada)
+- [x] Accesibilidad (ARIA, navegación por teclado)
+- [x] Optimización de rendimiento
 - [ ] PWA (Progressive Web App)
-- [ ] Lazy loading de módulos
-- [ ] Compresión de assets
+- [x] Lazy loading de módulos
+- [x] Compresión de assets
 - [ ] Setup de cache (Service Worker)
 
 #### 9.2 Testing
@@ -308,14 +308,14 @@ homeassistan/
 ### **FASE 10: Deployment y Documentación (Semanas 19-20)**
 
 #### 10.1 Deployment
-- [ ] Dockerfile optimizado (multi-stage)
-- [ ] Docker Compose para producción
+- [x] Dockerfile optimizado (multi-stage)
+- [x] Docker Compose para producción
 - [ ] Scripts de backup automático
 - [ ] Configuración de red LAN
-- [ ] Guía de instalación
+- [x] Guía de instalación
 
 #### 10.2 Documentación
-- [ ] API documentation (Swagger/OpenAPI)
+- [x] API documentation (Swagger/OpenAPI)
 - [ ] Manual de usuario
 - [ ] Guía de administrador
 - [ ] Troubleshooting guide
@@ -401,8 +401,8 @@ pnpm lint                   # Linting
 
 ## 📚 Próximos Pasos
 
-1. [ ] Revisar y aprobar este plan
-2. [ ] Configurar repositorio Git
-3. [ ] Iniciar Fase 0 (setup inicial)
-4. [ ] Crear primer sprint (2 semanas)
-5. [ ] Establecer flujo de trabajo (Git Flow)
+1. [x] Revisar y aprobar este plan
+2. [x] Configurar repositorio Git
+3. [x] Iniciar Fase 0 (setup inicial)
+4. [x] Crear primer sprint (2 semanas)
+5. [x] Establecer flujo de trabajo (Git Flow)
